@@ -1,5 +1,7 @@
 // === DESKTOP PYTHON SCRIPT ===
-const pythonScript = `import os, re, platform, hashlib
+const pythonScript = `import os
+import platform
+import hashlib
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
@@ -51,9 +53,12 @@ def check_apps():
                             disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
                             if any(app.lower() in disp.lower() for app in APPS):
                                 found.append(disp)
-                        except: pass
-                except: pass
-        except: pass
+                        except:
+                            pass
+                except:
+                    pass
+        except:
+            pass
     else:
         for d in ["/Applications", os.path.join(HOME, ".local/share/applications")]:
             if os.path.exists(d):
@@ -84,7 +89,8 @@ def check_clipboard():
         cb = pyperclip.paste()
         if any(k in cb.lower() for k in KEYWORDS):
             return cb
-    except: pass
+    except:
+        pass
     return None
 
 def scan_notes_and_docs():
@@ -130,7 +136,8 @@ def scan_browser_history():
             con.close()
             os.remove(tmp)
             return matches
-    except: pass
+    except:
+        pass
     return []
 
 def scan_password_managers():
@@ -141,32 +148,34 @@ def scan_password_managers():
     return found
 
 def main():
+    global REPORT  # ← This must be first line inside main()
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
-    REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
+    REPORT.append("\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
-    REPORT.append("\\n--- Browser Wallet Extensions ---")
+    REPORT.append("\n--- Browser Wallet Extensions ---")
     REPORT += check_browser_wallet_extensions()
-    REPORT.append("\\n--- Password Managers Detected ---")
+    REPORT.append("\n--- Password Managers Detected ---")
     REPORT += scan_password_managers()
-    REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
+    REPORT.append("\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
     for p, h in scan_notes_and_docs():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    REPORT.append("\n--- Screenshots with Wallet or Seed (SHA256) ---")
     for p, h in scan_screenshots():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT.append("\n--- Browser History URLs (wallet/seed/crypto) ---")
     REPORT += scan_browser_history()
-    REPORT.append("\\n--- Clipboard (if suspicious) ---")
+    REPORT.append("\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
-    if cb: REPORT.append(cb)
+    if cb:
+        REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
-            f.write(str(line)+"\\n")
-    print("\\n".join(REPORT))
-    print("\\nReport saved as crypto_forensics_report.txt")
+            f.write(str(line) + "\n")
+    print("\n".join(REPORT))
+    print("\nReport saved as crypto_forensics_report.txt")
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
 `;
 
