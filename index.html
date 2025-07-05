@@ -1,23 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" >
-<head>
-  <meta charset="UTF-8">
-  <title>Crypto Forensics Toolkit</title>
-  <link rel="stylesheet" href="./style.css">
-
-</head>
-<body>
-<!-- partial:index.partial.html -->
-<!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <title>Crypto Traces Forensics Toolkit</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
   <header>
     <div class="logo">
@@ -56,13 +44,16 @@
       <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
       <p>
         <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
-        <span class="tag">Requires Python 3.7+</span>
+        <span class="tag">Requires Python 3.7+
+          <button class="btn-mini" onclick="downloadPython()">Download Python</button>
+        </span>
       </p>
       <div class="button-row">
-        <button onclick="copyScript('py-script')">Copy Script</button>
-        <button onclick="downloadScript('py-script','crypto_desktop_scan.py')">Download Script</button>
+        <button onclick="copyScript('python')">Copy Script</button>
+        <button onclick="downloadScript('python','crypto_desktop_scan.py')">Download Script</button>
       </div>
-      <pre id="py-script" class="code-block"></pre>
+      <!-- Hidden pre/code block -->
+      <pre id="py-script" class="code-block" style="display:none;"></pre>
       <div class="section-info">
         <h3>Scans for:</h3>
         <ul>
@@ -82,10 +73,10 @@
         <span class="tag">Requires <code>adb</code> or Termux</span>
       </p>
       <div class="button-row">
-        <button onclick="copyScript('android-script')">Copy Script</button>
-        <button onclick="downloadScript('android-script','crypto_android_scan.sh')">Download Script</button>
+        <button onclick="copyScript('android')">Copy Script</button>
+        <button onclick="downloadScript('android','crypto_android_scan.sh')">Download Script</button>
       </div>
-      <pre id="android-script" class="code-block"></pre>
+      <pre id="android-script" class="code-block" style="display:none;"></pre>
       <div class="section-info">
         <h3>Scans for:</h3>
         <ul>
@@ -156,11 +147,5 @@
     </p>
   </footer>
   <script src="script.js"></script>
-</body>
-
-</html>
-<!-- partial -->
-  <script type="module" src="./script.js"></script>
-
 </body>
 </html>
