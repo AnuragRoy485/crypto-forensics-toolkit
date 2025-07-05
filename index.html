@@ -20,10 +20,9 @@
       <button type="submit" id="login-btn">Login</button>
       <div class="login-error" id="login-error"></div>
     </form>
-    <div class="login-hint">Demo Login ID: <b>admin</b> &nbsp;|&nbsp; Password: <b>lawenforce123</b></div>
   </div>
 
-  <!-- Toolkit Content -->
+  <!-- Main App Content (hidden until login) -->
   <div id="main-content" style="display:none;">
     <header>
       <div class="logo">
@@ -38,16 +37,101 @@
       </nav>
     </header>
     <main>
-      <!-- ... [same as before: all toolkit sections] ... -->
-      <!-- You can paste your previous HTML sections here starting from <main> -->
-      <!-- For brevity, I'm not repeating your whole toolkit HTML, but just keep everything you had here -->
-      <!-- ... -->
-      <!-- I'll include only a very short placeholder so you know where to insert your sections: -->
-      <section class="card glass animate" style="margin-top:50px;">
-        <h2>Welcome to the Crypto Traces Forensics Toolkit</h2>
-        <p>Full toolkit content is shown after login. (Paste your main HTML here!)</p>
+      <section id="onboard" class="card glass animate">
+        <h2>🚦 Quick Start</h2>
+        <div class="onboard-flex">
+          <div>
+            <h3>1. Download & Run the Script</h3>
+            <ul>
+              <li>Select <b>Desktop</b> or <b>Android</b> below.</li>
+              <li>Click <b>Copy</b> or <b>Download</b> to get the script.</li>
+              <li>Run it on the device you want to investigate.</li>
+              <li>The forensic report will include all detected crypto traces and evidence hashes.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>2. Review a Forensic Report</h3>
+            <ul>
+              <li>Paste a scan report text below to see a summary and highlights.</li>
+              <li>User-friendly summary for fast review by investigators.</li>
+            </ul>
+          </div>
+        </div>
       </section>
-      <!-- Paste the rest of your toolkit's HTML here (desktop/android/scripts/report, etc) -->
+      <section id="desktop" class="card glass animate">
+        <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
+        <p>
+          <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
+          <span class="tag">Requires Python 3.7+</span>
+          <button style="margin-left: 1em; font-size: 0.95em; vertical-align:middle;" onclick="downloadPython()">Download Python</button>
+        </p>
+        <div class="button-row">
+          <button onclick="copyScript('python')">Copy Script</button>
+          <button onclick="downloadScript('python','crypto_desktop_scan.py')">Download Script</button>
+        </div>
+        <!-- No visible code block, script is hidden from view -->
+      </section>
+      <section id="android" class="card glass animate">
+        <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
+        <p>
+          <b>Detects wallet apps, APKs, wallet files, screenshots, WhatsApp, SMS traces, and clipboard artifacts.</b>
+          <span class="tag">Requires <code>adb</code> or Termux</span>
+        </p>
+        <div class="button-row">
+          <button onclick="copyScript('android')">Copy Script</button>
+          <button onclick="downloadScript('android','crypto_android_scan.sh')">Download Script</button>
+        </div>
+      </section>
+      <section id="results" class="card glass animate">
+        <h2>Forensic Report Summary</h2>
+        <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
+        <div class="button-row">
+          <button onclick="showReport()">View Summary</button>
+        </div>
+        <div id="report-summary" class="report-summary"></div>
+      </section>
+      <section id="instructions" class="card glass animate">
+        <h2>Step-by-Step Usage</h2>
+        <div class="instructions-flex">
+          <div>
+            <h3>For Desktop</h3>
+            <ol>
+              <li>Copy or download the Python script above.</li>
+              <li>Transfer to the target computer (USB, email, etc).</li>
+              <li>
+                Open terminal/command prompt and run:<br>
+                <code>python crypto_desktop_scan.py</code>
+              </li>
+              <li>
+                The scan report is saved as <b>crypto_forensics_report.txt</b>. Open it to review all traces and evidence.
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h3>For Android</h3>
+            <ol>
+              <li>Enable <b>Developer Mode</b> & USB Debugging.</li>
+              <li>Connect device to PC and use <b>adb</b>, or open Termux app.</li>
+              <li>Copy or download the shell script above.</li>
+              <li>
+                In adb:<br>
+                <code>adb push crypto_android_scan.sh /data/local/tmp/</code><br>
+                <code>adb shell sh /data/local/tmp/crypto_android_scan.sh &gt; /sdcard/crypto_android_report.txt</code>
+              </li>
+              <li>
+                In Termux:<br>
+                <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
+              </li>
+              <li>
+                Review <b>crypto_android_report.txt</b> for all detected traces.
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="notice">
+          <b>Legal:</b> Strictly For Law Enforcement Agencies.
+        </div>
+      </section>
     </main>
     <footer>
       <p>
