@@ -1,3 +1,51 @@
+// ====== LOGIN SYSTEM (no backend, for demo/testing only) ======
+
+// Change these to your desired login id & password:
+const DEMO_USER = "admin";
+const DEMO_PASS = "lawenforce123";
+
+function showLogin() {
+  document.getElementById('login-modal').style.display = "flex";
+  document.getElementById('main-content').style.display = "none";
+}
+function showMain() {
+  document.getElementById('login-modal').style.display = "none";
+  document.getElementById('main-content').style.display = "block";
+  window.scrollTo(0,0);
+}
+
+// Try to keep session if user refreshes
+if (localStorage.getItem("forensics_logged_in") === "yes") showMain();
+else showLogin();
+
+document.getElementById("login-form").onsubmit = function() {
+  let uid = document.getElementById("login-id").value.trim();
+  let pwd = document.getElementById("login-password").value;
+  let errBox = document.getElementById("login-error");
+  if (uid === DEMO_USER && pwd === DEMO_PASS) {
+    localStorage.setItem("forensics_logged_in","yes");
+    showMain();
+    document.getElementById("login-id").value = "";
+    document.getElementById("login-password").value = "";
+    errBox.textContent = "";
+  } else {
+    errBox.textContent = "Invalid Login ID or Password!";
+    document.getElementById("login-password").value = "";
+  }
+};
+
+// Logout
+document.getElementById("logout-btn").onclick = function(e) {
+  e.preventDefault();
+  localStorage.removeItem("forensics_logged_in");
+  showLogin();
+};
+
+// =====================
+// ... Your old script.js code here for scripts/report/copy/download, etc.
+// =====================
+
+// (Paste your existing code for copyScript, downloadScript, downloadPython, showReport, etc. below this)
 // === DESKTOP PYTHON SCRIPT ===
 const pythonScript = `import os, re, platform, hashlib
 
