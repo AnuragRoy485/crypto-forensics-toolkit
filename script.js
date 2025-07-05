@@ -255,10 +255,9 @@ echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==
     URL.revokeObjectURL(url);
   };
 
-  window.downloadPython = function() {
-    // Direct link to your Netlify/static hosting of the python installer
-    window.location.href = "python-3.13.5-amd64.exe";
-  };
+  function downloadPython() {
+  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+};
 
   window.showReport = function() {
     let txt = document.getElementById('report-input').value.trim();
