@@ -1,7 +1,7 @@
 // ====== LOGIN SYSTEM (Browser-only, no backend, safe for Netlify/static hosting) ======
 window.onload = function() {
   const DEMO_USER = "admin";
-  const DEMO_PASS = "lawenforce123";
+  const DEMO_PASS = "lawenforce@123";
   function showLogin() {
     document.getElementById('login-modal').style.display = "flex";
     document.getElementById('main-content').style.display = "none";
