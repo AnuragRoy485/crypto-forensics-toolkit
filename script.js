@@ -1,7 +1,7 @@
-// ====== LOGIN SYSTEM (Browser-only, no backend, safe for Netlify/static hosting) ======
 window.onload = function() {
+  // ===== LOGIN SYSTEM (browser-only, safe for Netlify/static hosting) =====
   const DEMO_USER = "admin";
-  const DEMO_PASS = "lawenforce@123";
+  const DEMO_PASS = "lawenforce123";
   function showLogin() {
     document.getElementById('login-modal').style.display = "flex";
     document.getElementById('main-content').style.display = "none";
@@ -11,7 +11,6 @@ window.onload = function() {
     document.getElementById('main-content').style.display = "block";
     window.scrollTo(0,0);
   }
-  // Show login if not logged in
   if (localStorage.getItem("forensics_logged_in") === "yes") showMain();
   else showLogin();
   document.getElementById("login-form").onsubmit = function() {
@@ -35,9 +34,8 @@ window.onload = function() {
     showLogin();
   };
 
-  // === SCRIPTS DATA ===
-  // Paste your actual script content here:
-  const pythonScript = `import os, re, platform, hashlib
+  // ===== DESKTOP PYTHON SCRIPT (Robust & No Dummy Output) =====
+  const pythonScript = `import os, re, platform, hashlib, sys
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
@@ -52,6 +50,7 @@ BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wall
 
 HOME = os.path.expanduser("~")
 REPORT = []
+ERRORS = []
 
 def sha256_file(path):
     try:
@@ -61,11 +60,12 @@ def sha256_file(path):
                 h.update(chunk)
         return h.hexdigest()
     except Exception as e:
+        ERRORS.append(f"[SHA256 ERROR] {path}: {e}")
         return f"ERR:{e}"
 
 def find_files(root, exts, keywords):
     found = []
-    for r, d, f in os.walk(root):
+    for r, d, f in os.walk(root, topdown=True, onerror=lambda e: ERRORS.append(f"[DIR ERROR] {e}")):
         for file in f:
             l = file.lower()
             if any(l.endswith(e) for e in exts) or any(k in l for k in keywords):
@@ -76,28 +76,33 @@ def find_files(root, exts, keywords):
 def check_apps():
     plat = platform.system()
     found = []
-    if plat == "Windows":
-        try:
-            import winreg
-            for hive in [winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER]:
-                try:
-                    key = winreg.OpenKey(hive, r"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-                    for i in range(0, winreg.QueryInfoKey(key)[0]):
-                        skey = winreg.EnumKey(key, i)
-                        try:
-                            subkey = winreg.OpenKey(key, skey)
-                            disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
-                            if any(app.lower() in disp.lower() for app in APPS):
-                                found.append(disp)
-                        except: pass
-                except: pass
-        except: pass
-    else:
-        for d in ["/Applications", os.path.join(HOME, ".local/share/applications")]:
-            if os.path.exists(d):
-                for f in os.listdir(d):
-                    if any(app.lower() in f.lower() for app in APPS):
-                        found.append(f)
+    try:
+        if plat == "Windows":
+            try:
+                import winreg
+                for hive in [winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER]:
+                    try:
+                        key = winreg.OpenKey(hive, r"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                        for i in range(0, winreg.QueryInfoKey(key)[0]):
+                            skey = winreg.EnumKey(key, i)
+                            try:
+                                subkey = winreg.OpenKey(key, skey)
+                                disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
+                                if any(app.lower() in disp.lower() for app in APPS):
+                                    found.append(disp)
+                            except: pass
+                    except Exception as e:
+                        ERRORS.append(f"[WINREG ERROR] {e}")
+            except Exception as e:
+                ERRORS.append(f"[WINREG IMPORT ERROR] {e}")
+        else:
+            for d in ["/Applications", os.path.join(HOME, ".local/share/applications")]:
+                if os.path.exists(d):
+                    for f in os.listdir(d):
+                        if any(app.lower() in f.lower() for app in APPS):
+                            found.append(f)
+    except Exception as e:
+        ERRORS.append(f"[APPS SCAN ERROR] {e}")
     return found
 
 def check_browser_wallet_extensions():
@@ -110,19 +115,23 @@ def check_browser_wallet_extensions():
     ]
     for p in chromepaths:
         if os.path.exists(p):
-            for r, dirs, f in os.walk(p):
-                for d in dirs:
-                    if any(b in d.lower() for b in BROWSER_WALLETS):
-                        found.append(os.path.join(r, d))
+            try:
+                for r, dirs, f in os.walk(p, onerror=lambda e: ERRORS.append(f"[EXT DIR ERROR] {e}")):
+                    for d in dirs:
+                        if any(b in d.lower() for b in BROWSER_WALLETS):
+                            found.append(os.path.join(r, d))
+            except Exception as e:
+                ERRORS.append(f"[BROWSER WALLET ERROR] {e}")
     return found
 
 def check_clipboard():
     try:
         import pyperclip
         cb = pyperclip.paste()
-        if any(k in cb.lower() for k in KEYWORDS):
+        if cb and any(k in cb.lower() for k in KEYWORDS):
             return cb
-    except: pass
+    except Exception as e:
+        ERRORS.append(f"[CLIPBOARD ERROR] {e}")
     return None
 
 def scan_notes_and_docs():
@@ -130,18 +139,24 @@ def scan_notes_and_docs():
     for base in ["Documents", "Downloads", "Desktop", "Notes", "OneDrive"]:
         path = os.path.join(HOME, base)
         if os.path.exists(path):
-            files += find_files(path, EXTENSIONS, KEYWORDS)
+            try:
+                files += find_files(path, EXTENSIONS, KEYWORDS)
+            except Exception as e:
+                ERRORS.append(f"[NOTES/DOCS ERROR] {e}")
     return files
 
 def scan_screenshots():
     found = []
     pictures = os.path.join(HOME, "Pictures")
     if os.path.exists(pictures):
-        for r, d, f in os.walk(pictures):
-            for file in f:
-                if "screenshot" in file.lower() or any(k in file.lower() for k in KEYWORDS):
-                    p = os.path.join(r, file)
-                    found.append((p, sha256_file(p)))
+        try:
+            for r, d, f in os.walk(pictures, onerror=lambda e: ERRORS.append(f"[PICTURES DIR ERROR] {e}")):
+                for file in f:
+                    if "screenshot" in file.lower() or any(k in file.lower() for k in KEYWORDS):
+                        p = os.path.join(r, file)
+                        found.append((p, sha256_file(p)))
+        except Exception as e:
+            ERRORS.append(f"[SCREENSHOT ERROR] {e}")
     return found
 
 def scan_browser_history():
@@ -168,60 +183,102 @@ def scan_browser_history():
             con.close()
             os.remove(tmp)
             return matches
-    except: pass
+    except Exception as e:
+        ERRORS.append(f"[BROWSER HISTORY ERROR] {e}")
     return []
 
 def scan_password_managers():
     found = []
-    for name in ["LastPass", "Bitwarden", "Dashlane", "KeePass", "Chrome", "Edge"]:
-        if name.lower() in os.listdir(HOME):
-            found.append(name)
+    try:
+        for name in ["LastPass", "Bitwarden", "Dashlane", "KeePass", "Chrome", "Edge"]:
+            try:
+                if name.lower() in [x.lower() for x in os.listdir(HOME)]:
+                    found.append(name)
+            except: pass
+    except Exception as e:
+        ERRORS.append(f"[PASSWORD MANAGER ERROR] {e}")
     return found
 
 def main():
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
     REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
-    REPORT += check_apps()
+    apps = check_apps()
+    if apps:
+        REPORT.extend(apps)
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Browser Wallet Extensions ---")
-    REPORT += check_browser_wallet_extensions()
+    exts = check_browser_wallet_extensions()
+    if exts:
+        REPORT.extend(exts)
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Password Managers Detected ---")
-    REPORT += scan_password_managers()
+    pwds = scan_password_managers()
+    if pwds:
+        REPORT.extend(pwds)
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
-    for p, h in scan_notes_and_docs():
-        REPORT.append(f"{p} [SHA256: {h}]")
+    docs = scan_notes_and_docs()
+    if docs:
+        for p, h in docs:
+            REPORT.append(f"{p} [SHA256: {h}]")
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
-    for p, h in scan_screenshots():
-        REPORT.append(f"{p} [SHA256: {h}]")
+    shots = scan_screenshots()
+    if shots:
+        for p, h in shots:
+            REPORT.append(f"{p} [SHA256: {h}]")
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
-    REPORT += scan_browser_history()
+    hist = scan_browser_history()
+    if hist:
+        REPORT.extend(hist)
+    else:
+        REPORT.append("None detected.")
     REPORT.append("\\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
     if cb: REPORT.append(cb)
+    else: REPORT.append("No relevant data.")
+    if ERRORS:
+        REPORT.append("\\n--- WARNINGS/ERRORS DURING SCAN ---")
+        REPORT.extend(ERRORS)
+    REPORT.append("\\n=== Scan completed. ===")
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
             f.write(str(line)+"\\n")
     print("\\n".join(REPORT))
     print("\\nReport saved as crypto_forensics_report.txt")
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
 `;
 
+  // ===== ANDROID BASH SCRIPT (Robust & No Dummy Output) =====
   const androidScript = `echo "=== Android Crypto Forensics Scan ==="
 
+ERR=""
+
 echo "[1] Installed Crypto Apps:"
-pm list packages | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
+pm list packages 2>/dev/null | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
+if [ $? -ne 0 ]; then echo "Could not access package manager."; fi
 
 echo "[2] APK remnants and wallet files:"
 find /data/app -type d 2>/dev/null | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|blockchain|coinbase"
-find /sdcard/ -type f -iregex ".*\\(wallet\\|crypto\\|metamask\\|trust\\|exodus\\|electrum\\|tron\\|phantom\\|keplr\\|atomic\\|coinomi\\|binance\\|blockchain\\|coinbase\\|seed\\|mnemonic\\|backup\\|keystore\\|phrase\\|key\\|address\\|0x\\|bnb\\|bc1\\|ltc1\\|trx\\).*" -exec shasum -a 256 {} \\;
+if [ $? -ne 0 ]; then echo "Could not search /data/app (maybe no root)."; fi
+
+find /sdcard/ -type f -iregex ".*\\(wallet\\|crypto\\|metamask\\|trust\\|exodus\\|electrum\\|tron\\|phantom\\|keplr\\|atomic\\|coinomi\\|binance\\|blockchain\\|coinbase\\|seed\\|mnemonic\\|backup\\|keystore\\|phrase\\|key\\|address\\|0x\\|bnb\\|bc1\\|ltc1\\|trx\\).*" -exec shasum -a 256 {} \\; 2>/dev/null
+if [ $? -ne 0 ]; then echo "File scan error or no shasum utility."; fi
 
 echo "[3] WhatsApp, Documents, Downloads, Screenshots:"
 find /sdcard/WhatsApp/Media/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
 find /sdcard/Download/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
 find /sdcard/Documents/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
-find /sdcard/Pictures/ -type f -iname "*screenshot*" -exec shasum -a 256 {} \\;
+find /sdcard/Pictures/ -type f -iname "*screenshot*" -exec shasum -a 256 {} \\; 2>/dev/null
 
 echo "[4] SMS/WhatsApp databases for wallet/seed phrases (if accessible):"
 grep -Eri "wallet|seed|mnemonic|bitcoin|ethereum|metamask|address" /sdcard/WhatsApp/Databases/ 2>/dev/null
@@ -231,10 +288,11 @@ echo "[5] Clipboard (if available):"
 if command -v termux-clipboard-get >/dev/null 2>&1; then
   termux-clipboard-get | grep -Ei "wallet|seed|mnemonic|bitcoin|ethereum|metamask|address"
 else
-  echo "Clipboard access not available (install Termux:API)"
+  echo "Clipboard access not available (install Termux:API or not supported on this shell)."
 fi
 
-echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
+echo ""
+echo "=== Scan Complete. If nothing is shown above, no obvious crypto traces found, or scan couldn't access some areas (no root/permissions). ==="
 `;
 
   // ==== BUTTON HANDLERS ====
