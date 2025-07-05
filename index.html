@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Login Overlay -->
+  <!-- Login Modal (no hints shown) -->
   <div id="login-modal" class="login-modal glass">
     <h2>🔒 Law Enforcement Login</h2>
     <form id="login-form" autocomplete="off" onsubmit="return false;">
@@ -22,7 +22,7 @@
     </form>
   </div>
 
-  <!-- Main App Content (hidden until login) -->
+  <!-- Main Toolkit Content (hidden until login) -->
   <div id="main-content" style="display:none;">
     <header>
       <div class="logo">
@@ -69,7 +69,6 @@
           <button onclick="copyScript('python')">Copy Script</button>
           <button onclick="downloadScript('python','crypto_desktop_scan.py')">Download Script</button>
         </div>
-        <!-- No visible code block, script is hidden from view -->
       </section>
       <section id="android" class="card glass animate">
         <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
