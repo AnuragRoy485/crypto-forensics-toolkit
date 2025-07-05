@@ -1,10 +1,8 @@
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 :root {
   --bg: #080c16;
   --glass-bg: rgba(14, 20, 33, 0.85);
-  --glass-border: rgba(0, 255, 255, 0.11);
+  --glass-border: rgba(0,255,255,0.11);
   --navy-grad: linear-gradient(120deg, #0d1735 0%, #111829 100%);
   --neon-glow: 0 0 32px #00ffe166, 0 2px 14px #0939b855;
   --accent: #00ffe1;
@@ -15,33 +13,24 @@ html {
   --border-radius: 30px;
   --footer-grad: linear-gradient(90deg, #00ffe1 15%, #0099ff 65%, #111b32 100%);
 }
-html,
-body {
+html, body {
   background: var(--bg);
-  background-image: radial-gradient(
-      ellipse 100% 80% at 70% 15%,
-      #00ffe11b 0%,
-      transparent 80%
-    ),
-    radial-gradient(ellipse 100% 90% at 0% 100%, #0083ff13 0%, transparent 70%);
+  background-image: radial-gradient(ellipse 100% 80% at 70% 15%, #00ffe11b 0%, transparent 80%),
+                    radial-gradient(ellipse 100% 90% at 0% 100%, #0083ff13 0%, transparent 70%);
   color: var(--text);
-  font-family: "Segoe UI", "Montserrat", Arial, sans-serif;
+  font-family: 'Segoe UI', 'Montserrat', Arial, sans-serif;
   margin: 0;
   min-height: 100vh;
 }
 header {
   background: var(--glass-bg);
   box-shadow: var(--neon-glow);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   padding: 1.25rem 2.3rem;
   border-bottom: 1.5px solid var(--glass-border);
   backdrop-filter: blur(12px);
 }
-.logo img {
-  vertical-align: middle;
-}
+.logo img { vertical-align: middle; }
 .logo span {
   margin-left: 14px;
   font-size: 1.6rem;
@@ -65,14 +54,8 @@ nav a {
   padding-bottom: 3px;
   font-size: 1.05em;
 }
-nav a:hover {
-  color: var(--accent2);
-  border-bottom: 2px solid var(--accent);
-}
-main {
-  max-width: 1100px;
-  margin: 2.7rem auto;
-}
+nav a:hover { color: var(--accent2); border-bottom: 2px solid var(--accent); }
+main { max-width: 1100px; margin: 2.7rem auto; }
 .card {
   margin-bottom: 2.5rem;
   border-radius: var(--border-radius);
@@ -80,22 +63,14 @@ main {
   box-shadow: 0 0 48px 0 #00ffe155, 0 2px 12px #05122999;
   background: var(--glass-bg);
   backdrop-filter: blur(24px) saturate(1.2);
-  animation: fadein 0.88s cubic-bezier(0.42, 0, 0.58, 1);
+  animation: fadein 0.88s cubic-bezier(0.42,0,0.58,1.0);
   padding: 2.3rem 2.1rem;
 }
 @keyframes fadein {
-  from {
-    opacity: 0;
-    transform: translateY(55px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(55px);}
+  to { opacity: 1; transform: none; }
 }
-.animate {
-  animation: fadein 1.2s cubic-bezier(0.48, 0, 0.52, 1);
-}
+.animate { animation: fadein 1.2s cubic-bezier(0.48,0,0.52,1.0);}
 h2 {
   color: #21b7ff;
   font-size: 2.1em;
@@ -121,16 +96,27 @@ h2 {
   letter-spacing: 0.07em;
   font-weight: 600;
 }
-.section-info h3 {
-  color: #22ffe9;
-  font-size: 1.13em;
-  letter-spacing: 0.02em;
+.btn-mini {
+  background: linear-gradient(98deg, #00ffe1 20%, #0099ff 80%);
+  color: #041620;
+  font-size: 0.98em;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+  padding: 0.3em 0.9em;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: background 0.14s, color 0.13s;
+  box-shadow: 0 2px 9px #00baff55;
 }
-.section-info ul {
-  margin-top: 0.5em;
+.btn-mini:hover {
+  background: #001c33;
+  color: #00ffe1;
 }
+.section-info h3 { color: #22ffe9; font-size: 1.13em; letter-spacing: 0.02em; }
+.section-info ul { margin-top: 0.5em; }
 .code-block {
-  background: rgba(14, 20, 33, 0.97);
+  background: rgba(14,20,33, 0.97);
   color: #2afff7;
   border-radius: 16px;
   padding: 1.18em;
@@ -141,12 +127,10 @@ h2 {
   margin-bottom: 1.1em;
   margin-top: 1em;
   border: 1.5px solid #0099ff48;
-  font-family: "JetBrains Mono", "Fira Mono", "Consolas", "Menlo", monospace;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Consolas', 'Menlo', monospace;
   box-shadow: 0 0 38px #00eaff26 inset;
 }
-.button-row {
-  margin-bottom: 1.22em;
-}
+.button-row { margin-bottom: 1.22em; }
 button {
   background: linear-gradient(98deg, #00ffe1 20%, #0099ff 80%);
   border: none;
@@ -162,10 +146,7 @@ button {
   letter-spacing: 0.05em;
   outline: none;
 }
-button:hover {
-  background: #001c33;
-  color: #00ffe1;
-}
+button:hover { background: #001c33; color: #00ffe1; }
 .tag {
   display: inline-block;
   background: var(--tag-bg);
@@ -178,53 +159,30 @@ button:hover {
   font-weight: 500;
   letter-spacing: 0.5px;
 }
-.onboarding {
-  border: 2.8px solid var(--accent);
-}
-.onboard-flex {
-  display: flex;
-  gap: 2.5em;
-  flex-wrap: wrap;
-}
-.onboard-flex > div {
-  min-width: 260px;
-  flex: 1;
-}
+.onboarding { border: 2.8px solid var(--accent);}
+.onboard-flex { display: flex; gap: 2.5em; flex-wrap: wrap;}
+.onboard-flex > div { min-width: 260px; flex: 1;}
 textarea#report-input {
-  width: 100%;
-  min-height: 135px;
-  background: rgba(14, 20, 33, 0.97);
+  width: 100%; min-height: 135px;
+  background: rgba(14,20,33, 0.97);
   color: #d1f9ff;
-  border-radius: 14px;
-  border: 1.5px solid #00ffe155;
-  padding: 1em;
-  font-size: 1.06em;
-  margin-top: 0.9em;
-  margin-bottom: 1em;
-  font-family: inherit;
+  border-radius: 14px; border: 1.5px solid #00ffe155;
+  padding: 1em; font-size: 1.06em; margin-top: 0.9em;
+  margin-bottom: 1em; font-family: inherit;
   box-shadow: 0 0 28px #0099ff20 inset;
   outline: none;
   resize: vertical;
 }
 .report-summary {
-  margin: 1.2em 0;
-  font-size: 1.11em;
-  line-height: 1.6;
-  background: rgba(8, 12, 22, 0.77);
+  margin: 1.2em 0; font-size: 1.11em; line-height: 1.6;
+  background: rgba(8,12,22, 0.77);
   border-radius: 11px;
   border: 1.2px solid #00ffe133;
   box-shadow: 0 0 14px #00ffe133 inset;
   padding: 1.1em 1.3em;
 }
-.instructions-flex {
-  display: flex;
-  gap: 2em;
-  flex-wrap: wrap;
-}
-.instructions-flex > div {
-  min-width: 260px;
-  flex: 1;
-}
+.instructions-flex { display: flex; gap: 2em; flex-wrap: wrap; }
+.instructions-flex > div { min-width: 260px; flex: 1; }
 .notice {
   color: var(--danger);
   background: #25273d93;
@@ -251,24 +209,16 @@ footer {
   background-clip: padding-box;
 }
 @media (max-width: 1050px) {
-  main {
-    padding: 0 1.2em;
-  }
-  .onboard-flex,
-  .instructions-flex {
-    flex-direction: column;
-    gap: 1.2em;
-  }
-  .card {
-    padding: 1.2em 1em;
-  }
+  main { padding: 0 1.2em;}
+  .onboard-flex, .instructions-flex { flex-direction: column; gap: 1.2em; }
+  .card { padding: 1.2em 1em; }
 }
 /* ======================
    Custom Scrollbar Styles
    ====================== */
 ::-webkit-scrollbar {
   width: 12px;
-  background: rgba(20, 30, 50, 0.24);
+  background: rgba(20,30,50,0.24);
   border-radius: 9px;
 }
 ::-webkit-scrollbar-thumb {
