@@ -1,23 +1,19 @@
-// ====== LOGIN SYSTEM (for demo/testing only) ======
-
-const DEMO_USER = "admin";
-const DEMO_PASS = "lawenforce123";
-
-function showLogin() {
-  document.getElementById('login-modal').style.display = "flex";
-  document.getElementById('main-content').style.display = "none";
-}
-function showMain() {
-  document.getElementById('login-modal').style.display = "none";
-  document.getElementById('main-content').style.display = "block";
-  window.scrollTo(0,0);
-}
-
+// ====== LOGIN SYSTEM (Browser-only, no backend, safe for Netlify/static hosting) ======
 window.onload = function() {
-  // Session persists after refresh
+  const DEMO_USER = "admin";
+  const DEMO_PASS = "lawenforce123";
+  function showLogin() {
+    document.getElementById('login-modal').style.display = "flex";
+    document.getElementById('main-content').style.display = "none";
+  }
+  function showMain() {
+    document.getElementById('login-modal').style.display = "none";
+    document.getElementById('main-content').style.display = "block";
+    window.scrollTo(0,0);
+  }
+  // Show login if not logged in
   if (localStorage.getItem("forensics_logged_in") === "yes") showMain();
   else showLogin();
-
   document.getElementById("login-form").onsubmit = function() {
     let uid = document.getElementById("login-id").value.trim();
     let pwd = document.getElementById("login-password").value;
@@ -33,25 +29,15 @@ window.onload = function() {
       document.getElementById("login-password").value = "";
     }
   };
-
-  // Logout
   document.getElementById("logout-btn").onclick = function(e) {
     e.preventDefault();
     localStorage.removeItem("forensics_logged_in");
     showLogin();
   };
-};
 
-// Paste your main code below this!
-
-
-// =====================
-// ... Your old script.js code here for scripts/report/copy/download, etc.
-// =====================
-
-// (Paste your existing code for copyScript, downloadScript, downloadPython, showReport, etc. below this)
-// === DESKTOP PYTHON SCRIPT ===
-const pythonScript = `import os, re, platform, hashlib
+  // === SCRIPTS DATA ===
+  // Paste your actual script content here:
+  const pythonScript = `import os, re, platform, hashlib
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
@@ -222,8 +208,7 @@ if __name__=="__main__":
     main()
 `;
 
-// === ANDROID BASH SCRIPT ===
-const androidScript = `echo "=== Android Crypto Forensics Scan ==="
+  const androidScript = `echo "=== Android Crypto Forensics Scan ==="
 
 echo "[1] Installed Crypto Apps:"
 pm list packages | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
@@ -252,54 +237,43 @@ fi
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
 `;
 
-function copyScript(type) {
-  let el;
-  if (type === "python") {
-    el = document.createElement("textarea");
-    el.value = pythonScript;
-  } else if (type === "android") {
-    el = document.createElement("textarea");
-    el.value = androidScript;
-  }
-  document.body.appendChild(el);
-  el.select();
-  document.execCommand('copy');
-  document.body.removeChild(el);
-  alert('Script copied to clipboard!');
-}
+  // ==== BUTTON HANDLERS ====
+  window.copyScript = function(type) {
+    let code = (type === "python") ? pythonScript : androidScript;
+    navigator.clipboard.writeText(code).then(() => {
+      alert('Script copied to clipboard!');
+    });
+  };
 
-function downloadScript(type, filename) {
-  let text = (type === "python") ? pythonScript : androidScript;
-  let blob = new Blob([text], {type:'text/plain'});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement('a');
-  a.href = url; a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+  window.downloadScript = function(type, filename) {
+    let code = (type === "python") ? pythonScript : androidScript;
+    let blob = new Blob([code], {type:'text/plain'});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.href = url; a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
-function downloadPython() {
-  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
-}
+  window.downloadPython = function() {
+    // Direct link to your Netlify/static hosting of the python installer
+    window.location.href = "python-3.13.5-amd64.exe";
+  };
 
+  window.showReport = function() {
+    let txt = document.getElementById('report-input').value.trim();
+    if (!txt) { alert('Please paste a report.'); return; }
+    let lines = txt.split(/\r?\n/).filter(x=>x);
+    let suspicious = lines.filter(l=>l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i));
+    let summary = "<b>=== SCAN SUMMARY ===</b><br>";
+    summary += suspicious.length
+      ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
+        suspicious.slice(0,10).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
+      : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
+    summary += "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
+      lines.slice(0, 200).join("<br>") + (lines.length > 200 ? "<br>...(truncated)" : "") +
+      "</div>";
+    document.getElementById('report-summary').innerHTML = summary;
+  };
 
-window.onload = () => {
-  document.getElementById('py-script').textContent = pythonScript;
-  document.getElementById('android-script').textContent = androidScript;
-};
-
-function showReport() {
-  let txt = document.getElementById('report-input').value.trim();
-  if (!txt) { alert('Please paste a report.'); return; }
-  let lines = txt.split(/\r?\n/).filter(x=>x);
-  let suspicious = lines.filter(l=>l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i));
-  let summary = "<b>=== SCAN SUMMARY ===</b><br>";
-  summary += suspicious.length
-    ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
-      suspicious.slice(0,10).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
-    : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
-  summary += "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
-    lines.slice(0, 200).join("<br>") + (lines.length > 200 ? "<br>...(truncated)" : "") +
-    "</div>";
-  document.getElementById('report-summary').innerHTML = summary;
-}
+}; // end window.onload
