@@ -256,8 +256,20 @@ echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==
   };
 
   function downloadPython() {
-  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
-};
+  // Try local first, fallback if not found
+  fetch('python-3.13.5-amd64.exe', { method: 'HEAD' })
+    .then(res => {
+      if (res.ok) {
+        window.location.href = "python-3.13.5-amd64.exe";
+      } else {
+        window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+      }
+    })
+    .catch(() => {
+      window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+    });
+}
+
 
   window.showReport = function() {
     let txt = document.getElementById('report-input').value.trim();
