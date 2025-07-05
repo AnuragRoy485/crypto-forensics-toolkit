@@ -255,11 +255,9 @@ echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==
     URL.revokeObjectURL(url);
   };
 
-  function downloadPython() {
-  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
-};
-}
-
+  window.downloadPython = function() {
+    window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+  };
 
   window.showReport = function() {
     let txt = document.getElementById('report-input').value.trim();
