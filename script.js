@@ -227,7 +227,9 @@ function downloadScript(type, filename) {
 }
 
 function downloadPython() {
-  window.location.href = "python-3.13.5-amd64.exe";
+  // This uses the official Python.org link
+  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+
 }
 
 window.onload = () => {
