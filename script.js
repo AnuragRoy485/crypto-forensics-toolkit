@@ -13,6 +13,7 @@ KEYWORDS = [
 BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wallet"]
 
 HOME = os.path.expanduser("~")
+REPORT = []
 
 def sha256_file(path):
     try:
@@ -140,7 +141,6 @@ def scan_password_managers():
     return found
 
 def main():
-    REPORT = []
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
     REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
@@ -201,28 +201,38 @@ echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==
 `;
 
 function copyScript(type) {
-  let script = type === "python" ? pythonScript : androidScript;
-  navigator.clipboard.writeText(script).then(() => {
-    alert('Script copied to clipboard!');
-  });
+  let el;
+  if (type === "python") {
+    el = document.createElement("textarea");
+    el.value = pythonScript;
+  } else if (type === "android") {
+    el = document.createElement("textarea");
+    el.value = androidScript;
+  }
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  alert('Script copied to clipboard!');
 }
+
 function downloadScript(type, filename) {
-  let script = type === "python" ? pythonScript : androidScript;
-  let blob = new Blob([script], {type:'text/plain'});
+  let text = (type === "python") ? pythonScript : androidScript;
+  let blob = new Blob([text], {type:'text/plain'});
   let url = URL.createObjectURL(blob);
   let a = document.createElement('a');
   a.href = url; a.download = filename;
-  document.body.appendChild(a); // For Firefox compatibility
   a.click();
-  a.remove();
   URL.revokeObjectURL(url);
 }
+
 function downloadPython() {
   window.location.href = "python-3.13.5-amd64.exe";
 }
+
 window.onload = () => {
-  document.getElementById('py-script').style.display = "none";
-  document.getElementById('android-script').style.display = "none";
+  document.getElementById('py-script').textContent = pythonScript;
+  document.getElementById('android-script').textContent = androidScript;
 };
 
 function showReport() {
