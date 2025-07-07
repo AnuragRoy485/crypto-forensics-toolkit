@@ -2,7 +2,7 @@
 // LOGIN LOGIC & AUTO LOGOUT
 // =====================
 
-const LOGIN_USER = 'admin', LOGIN_PASS = 'admin@1234'; // Change as needed
+const LOGIN_USER = 'admin', LOGIN_PASS = 'forensics@485'; // Change as needed
 const AUTO_LOGOUT_MIN = 10;
 
 function showMainApp() {
