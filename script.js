@@ -1,22 +1,76 @@
-// ====== LOGIN FEATURE ======
-let isLoggedIn = false;
-const AUTO_LOGOUT_MS = 10 * 60 * 1000; // 10 minutes
-let logoutTimer;
+// =====================
+// LOGIN LOGIC & AUTO LOGOUT
+// =====================
 
-// Credentials (change as needed)
-const VALID_USERNAME = "admin";
-const VALID_PASSWORD = "forensics@25";
+const LOGIN_USER = 'admin', LOGIN_PASS = 'admin@1234'; // Change as needed
+const AUTO_LOGOUT_MIN = 10;
 
-// ====== DESKTOP PYTHON SCRIPT ======
+function showMainApp() {
+  document.getElementById("login-bg").style.display = "none";
+  document.getElementById("main-app").style.display = "block";
+  startLogoutTimer();
+}
+
+function showLogin() {
+  document.getElementById("main-app").style.display = "none";
+  document.getElementById("login-bg").style.display = "flex";
+}
+
+function tryLogin() {
+  const u = document.getElementById('login-username').value.trim();
+  const p = document.getElementById('login-password').value;
+  if (u === LOGIN_USER && p === LOGIN_PASS) {
+    showMainApp();
+  } else {
+    document.getElementById("login-message").innerText = "Invalid credentials. Try again.";
+  }
+}
+
+// Auto logout
+let logoutTimer = null;
+function startLogoutTimer() {
+  if (logoutTimer) clearTimeout(logoutTimer);
+  logoutTimer = setTimeout(() => {
+    alert("You have been logged out for security reasons.");
+    logout();
+  }, AUTO_LOGOUT_MIN * 60 * 1000);
+  // Reset timer on user interaction:
+  ["click","mousemove","keydown"].forEach(evt =>
+    document.addEventListener(evt, resetLogoutTimer));
+}
+function resetLogoutTimer() {
+  if (logoutTimer) {
+    clearTimeout(logoutTimer);
+    logoutTimer = setTimeout(() => {
+      alert("You have been logged out for security reasons.");
+      logout();
+    }, AUTO_LOGOUT_MIN * 60 * 1000);
+  }
+}
+function logout() {
+  showLogin();
+  // Optionally, clear all fields and summaries
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-message').innerText = '';
+  document.getElementById('report-input').value = '';
+  document.getElementById('report-summary').innerHTML = '';
+}
+
+// =====================
+// FORENSICS SCRIPTS (ADVANCED)
+// =====================
+
 const pythonScript = `import os, re, platform, hashlib
+
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
     "Exodus", "Blockchain.com", "Atomic Wallet", "Ledger Live"
 ]
-EXTENSIONS = [".dat", ".key", ".bin", ".wallet", ".ldb", ".log", ".json", ".sqlite", ".txt", ".pdf", ".docx"]
+EXTENSIONS = [".dat", ".key", ".wallet", ".ldb", ".json", ".sqlite", ".bin"]
 KEYWORDS = [
-    "wallet", "crypto", "seed", "mnemonic", "key", "backup", "keystore", "phrase", "ledger", "address",
-    "0x", "bnb", "bc1", "ltc1", "trx", "doge", "exchange", "coinbase", "binance", "metamask", "phantom", "tronlink"
+    "wallet", "crypto", "seed", "mnemonic", "keystore", "phrase", "ledger", "address",
+    "0x", "bnb", "bc1", "ltc1", "trx", "exchange", "coinbase", "binance", "metamask", "phantom", "tronlink"
 ]
 BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wallet"]
 
@@ -30,17 +84,22 @@ def sha256_file(path):
             for chunk in iter(lambda: f.read(65536), b""):
                 h.update(chunk)
         return h.hexdigest()
-    except Exception as e:
-        return f"ERR:{e}"
+    except Exception:
+        return None
 
 def find_files(root, exts, keywords):
     found = []
     for r, d, f in os.walk(root):
         for file in f:
             l = file.lower()
-            if any(l.endswith(e) for e in exts) or any(k in l for k in keywords):
-                p = os.path.join(r, file)
-                found.append((p, sha256_file(p)))
+            # Only list if BOTH ext/keyword matches AND file contains crypto keyword in path or name
+            if (any(l.endswith(e) for e in exts) or any(k in l for k in keywords)):
+                fullpath = os.path.join(r, file)
+                # Only show if crypto keyword in path or filename
+                if any(k in fullpath.lower() for k in keywords):
+                    hashval = sha256_file(fullpath)
+                    if hashval:
+                        found.append((fullpath, hashval))
     return found
 
 def check_apps():
@@ -111,7 +170,8 @@ def scan_screenshots():
             for file in f:
                 if "screenshot" in file.lower() or any(k in file.lower() for k in KEYWORDS):
                     p = os.path.join(r, file)
-                    found.append((p, sha256_file(p)))
+                    if any(k in p.lower() for k in KEYWORDS):
+                        found.append((p, sha256_file(p)))
     return found
 
 def scan_browser_history():
@@ -178,9 +238,7 @@ if __name__=="__main__":
     main()
 `;
 
-// ====== ANDROID BASH SCRIPT ======
 const androidScript = `echo "=== Android Crypto Forensics Scan ==="
-
 echo "[1] Installed Crypto Apps:"
 pm list packages | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
 
@@ -204,176 +262,78 @@ if command -v termux-clipboard-get >/dev/null 2>&1; then
 else
   echo "Clipboard access not available (install Termux:API)"
 fi
-
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
 `;
 
-// ====== LOGIN & LOGOUT ======
-function showLogin() {
-  document.body.innerHTML = `
-    <div class="login-container">
-      <div class="login-card glass">
-        <h2 style="margin-bottom:1.2em;">Crypto Traces Forensics Toolkit</h2>
-        <input id="login-username" type="text" placeholder="Login ID">
-        <input id="login-password" type="password" placeholder="Password">
-        <button onclick="tryLogin()">Login</button>
-      </div>
-    </div>
-  `;
-}
-function tryLogin() {
-  let u = document.getElementById("login-username").value.trim();
-  let p = document.getElementById("login-password").value.trim();
-  if (u === VALID_USERNAME && p === VALID_PASSWORD) {
-    isLoggedIn = true;
-    document.body.innerHTML = window._main_html;
-    window.onload();
-    document.getElementById('logout-link').style.display = "inline";
-    startLogoutTimer();
-  } else {
-    alert("Invalid credentials. Please try again.");
-  }
-}
-function logout() {
-  isLoggedIn = false;
-  showLogin();
-  clearTimeout(logoutTimer);
-}
-function resetLogoutTimer() {
-  clearTimeout(logoutTimer);
-  if (isLoggedIn) startLogoutTimer();
-}
-function startLogoutTimer() {
-  logoutTimer = setTimeout(() => {
-    alert("Session expired due to inactivity. Please login again.");
-    logout();
-  }, AUTO_LOGOUT_MS);
-}
-["click", "keydown", "mousemove", "touchstart"].forEach(evt => {
-  document.addEventListener(evt, resetLogoutTimer, true);
-});
-
-// ====== SCRIPT COPY/DOWNLOAD ======
+// Show scripts only on download/copy
 function copyScript(id) {
-  if (!isLoggedIn) { alert("Please login first."); return; }
-  let text = (id === 'py-script') ? pythonScript : androidScript;
-  navigator.clipboard.writeText(text).then(() => {
+  const pre = document.getElementById(id);
+  if (id === "py-script") pre.textContent = pythonScript;
+  if (id === "android-script") pre.textContent = androidScript;
+  navigator.clipboard.writeText(pre.textContent).then(() => {
     alert('Script copied to clipboard!');
   });
 }
 function downloadScript(id, filename) {
-  if (!isLoggedIn) { alert("Please login first."); return; }
-  let text = (id === 'py-script') ? pythonScript : androidScript;
-  let blob = new Blob([text], {type:'text/plain'});
-  let url = URL.createObjectURL(blob);
-  let a = document.createElement('a');
+  const pre = document.getElementById(id);
+  if (id === "py-script") pre.textContent = pythonScript;
+  if (id === "android-script") pre.textContent = androidScript;
+  const text = pre.textContent;
+  const blob = new Blob([text], {type:'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
   a.href = url; a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// =====================
+// PYTHON DOWNLOAD BUTTON
+// =====================
 function downloadPython() {
   window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
 }
 
-// ====== REPORT SUMMARY ======
-let lastSummaryHTML = "";
-let lastFullReport = "";
-
+// =====================
+// REPORT SUMMARY + PDF EXPORT
+// =====================
 function showReport() {
-  if (!isLoggedIn) { alert("Please login first."); return; }
   let txt = document.getElementById('report-input').value.trim();
   if (!txt) { alert('Please paste a report.'); return; }
   let lines = txt.split(/\r?\n/).filter(x=>x);
-  let suspicious = lines.filter(l=>
-    l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i)
-  );
+  let suspicious = lines.filter(l=>l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i));
   let summary = "<b>=== SCAN SUMMARY ===</b><br>";
   summary += suspicious.length
     ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
-      suspicious.slice(0,10).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
+      suspicious.slice(0,20).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
     : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
   summary += "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
-    lines.slice(0, 200).join("<br>") + (lines.length > 200 ? "<br>...(truncated)" : "") +
+    lines.slice(0, 400).join("<br>") + (lines.length > 400 ? "<br>...(truncated)" : "") +
     "</div>";
   document.getElementById('report-summary').innerHTML = summary;
-  lastSummaryHTML = summary;
-  lastFullReport = txt;
-  document.getElementById('export-pdf-btn').style.display = "inline-block";
 }
 
-// ====== EXPORT TO PDF ======
-function exportReportPDF() {
-  if (!isLoggedIn) { alert("Please login first."); return; }
+function exportReportToPDF() {
   const { jsPDF } = window.jspdf;
-  let doc = new jsPDF({ unit: "pt", format: "a4" });
-  let now = new Date();
-  let dateStr = now.toLocaleString();
-  let y = 42;
-  // Title & header
+  let input = document.getElementById('report-input').value.trim();
+  if (!input) return alert('Paste a report first!');
+  let doc = new jsPDF({unit:'pt',format:'a4'});
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor("#026CFF");
-  doc.text("Crypto Traces Forensics Toolkit", 36, y);
-  y += 28;
-  doc.setFontSize(11);
+  doc.setFontSize(22);
+  doc.text("Crypto Traces Forensics Toolkit\nForensic Report", 40, 60);
+  doc.setFontSize(13);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor("#111");
-  doc.text(`For Law Enforcement Use Only — Report generated: ${dateStr}`, 36, y);
-  y += 22;
-  doc.setDrawColor(100, 180, 255);
-  doc.line(36, y, 540, y);
-  y += 18;
-
-  // Summary
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("Scan Summary:", 36, y);
-  y += 20;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  let summaryLines = lastSummaryHTML.replace(/<[^>]+>/g,'').split('\n');
-  summaryLines.forEach(line => {
-    doc.text(line.trim(), 36, y);
-    y += 14;
-    if (y > 740) { doc.addPage(); y = 42; }
-  });
-
-  // Full Report
-  y += 20;
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.text("Full Forensic Report:", 36, y);
-  y += 20;
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  let repLines = lastFullReport.split('\n');
-  repLines.forEach(line => {
-    doc.text(line.substring(0,140), 36, y);
-    y += 12;
-    if (y > 760) { doc.addPage(); y = 42; }
-  });
-
-  // Footer
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor("#1477dd");
-  doc.setFontSize(11);
-  doc.text("© Anurag Roy | Crypto Traces Forensics Toolkit | Strictly for Law Enforcement Use | Jai Hind", 36, 810);
-
-  doc.save(`crypto_forensics_report_${now.getFullYear()}${now.getMonth()+1}${now.getDate()}_${now.getHours()}${now.getMinutes()}.pdf`);
+  let lines = doc.splitTextToSize(input, 510);
+  doc.text(lines, 40, 110);
+  doc.save('crypto_forensics_report.pdf');
 }
 
-// ====== MAIN UI INIT ======
+// =====================
+// INIT
+// =====================
 window.onload = function() {
-  if (!isLoggedIn) {
-    window._main_html = document.body.innerHTML;
-    showLogin();
-    return;
-  }
-  if (document.getElementById('py-script'))
-    document.getElementById('py-script').textContent = pythonScript;
-  if (document.getElementById('android-script'))
-    document.getElementById('android-script').textContent = androidScript;
-  let btn = document.getElementById('export-pdf-btn');
-  if (btn) btn.style.display = "none";
-  document.getElementById('logout-link').style.display = "inline";
+  // Hide code blocks until needed
+  document.getElementById("py-script").style.display = "none";
+  document.getElementById("android-script").style.display = "none";
+  showLogin();
 };
