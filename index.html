@@ -7,23 +7,17 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Login Modal (no hints shown) -->
-  <div id="login-modal" class="login-modal glass">
-    <h2>🔒 Law Enforcement Login</h2>
-    <form id="login-form" autocomplete="off" onsubmit="return false;">
-      <div>
-        <input type="text" id="login-id" placeholder="Login ID" required autocomplete="username">
-      </div>
-      <div>
-        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password">
-      </div>
-      <button type="submit" id="login-btn">Login</button>
-      <div class="login-error" id="login-error"></div>
+  <!-- LOGIN OVERLAY -->
+  <div id="login-wrapper" style="display:flex;align-items:center;justify-content:center;min-height:100vh;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99;background:rgba(8,16,24,0.96)">
+    <form onsubmit="doLogin(event)" style="background:rgba(18,32,44,0.96);border-radius:18px;box-shadow:0 0 18px #00ffe130;padding:3em 2.2em;min-width:320px">
+      <h2 style="color:#00ffe1;text-align:center;">Crypto Forensics Toolkit Login</h2>
+      <input id="login-user" autocomplete="username" placeholder="Login ID" required style="display:block;width:100%;margin:1em 0 0.7em 0;padding:0.8em;font-size:1.1em;border-radius:9px;border:none;box-shadow:0 2px 8px #00ffe133 inset;background:#181d2a;color:#00ffe1;">
+      <input id="login-pass" autocomplete="current-password" type="password" placeholder="Password" required style="display:block;width:100%;margin:0 0 1.3em 0;padding:0.8em;font-size:1.1em;border-radius:9px;border:none;box-shadow:0 2px 8px #00ffe133 inset;background:#181d2a;color:#00ffe1;">
+      <button type="submit" style="width:100%;background:linear-gradient(98deg,#00ffe1 20%,#0099ff 80%);color:#071c2e;font-weight:bold;font-size:1.09em;padding:0.88em;border-radius:12px;border:none;cursor:pointer;box-shadow:0 4px 16px #0099ff24;">Login</button>
     </form>
   </div>
-
-  <!-- Main Toolkit Content (hidden until login) -->
-  <div id="main-content" style="display:none;">
+  <!-- MAIN CONTENT -->
+  <div id="main-content" style="display:none">
     <header>
       <div class="logo">
         <img src="https://cdn-icons-png.flaticon.com/512/851/851570.png" width="44" alt="logo">
@@ -33,7 +27,6 @@
         <a href="#desktop">Desktop</a>
         <a href="#android">Android</a>
         <a href="#instructions">Instructions</a>
-        <a href="#" id="logout-btn" style="margin-left:2.5em;color:#ff4a63;">Logout</a>
       </nav>
     </header>
     <main>
@@ -44,7 +37,7 @@
             <h3>1. Download & Run the Script</h3>
             <ul>
               <li>Select <b>Desktop</b> or <b>Android</b> below.</li>
-              <li>Click <b>Copy</b> or <b>Download</b> to get the script.</li>
+              <li>Click <b>Copy Script</b> or <b>Download Script</b> to get the script.</li>
               <li>Run it on the device you want to investigate.</li>
               <li>The forensic report will include all detected crypto traces and evidence hashes.</li>
             </ul>
@@ -63,11 +56,21 @@
         <p>
           <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
           <span class="tag">Requires Python 3.7+</span>
-          <button style="margin-left: 1em; font-size: 0.95em; vertical-align:middle;" onclick="downloadPython()">Download Python</button>
         </p>
         <div class="button-row">
-          <button onclick="copyScript('python')">Copy Script</button>
-          <button onclick="downloadScript('python','crypto_desktop_scan.py')">Download Script</button>
+          <button onclick="copyScript('py-script')">Copy Script</button>
+          <button onclick="downloadScript('py-script','crypto_desktop_scan.py')">Download Script</button>
+          <button onclick="downloadPython()">Download Python</button>
+        </div>
+        <!-- No code block displayed per your requirement -->
+        <div class="section-info">
+          <h3>Scans for:</h3>
+          <ul>
+            <li>Installed wallet apps & password managers</li>
+            <li>Wallet/seed/config files (with crypto content check)</li>
+            <li>Clipboard, screenshots, browser history, notes</li>
+            <li>SHA256 hash as evidence for each crypto-related file</li>
+          </ul>
         </div>
       </section>
       <section id="android" class="card glass animate">
@@ -77,8 +80,19 @@
           <span class="tag">Requires <code>adb</code> or Termux</span>
         </p>
         <div class="button-row">
-          <button onclick="copyScript('android')">Copy Script</button>
-          <button onclick="downloadScript('android','crypto_android_scan.sh')">Download Script</button>
+          <button onclick="copyScript('android-script')">Copy Script</button>
+          <button onclick="downloadScript('android-script','crypto_android_scan.sh')">Download Script</button>
+        </div>
+        <!-- No code block displayed -->
+        <div class="section-info">
+          <h3>Scans for:</h3>
+          <ul>
+            <li>All crypto wallet apps (installed & recently uninstalled)</li>
+            <li>Wallet/seed/APKs/files/screenshots (with hashes)</li>
+            <li>WhatsApp/Downloads/Documents/SMS</li>
+            <li>Clipboard artifacts (Termux-API)</li>
+            <li>SHA256 for evidence chain</li>
+          </ul>
         </div>
       </section>
       <section id="results" class="card glass animate">
@@ -95,15 +109,13 @@
           <div>
             <h3>For Desktop</h3>
             <ol>
+              <li>Click "Download Python" if not already installed (add to PATH during setup).</li>
               <li>Copy or download the Python script above.</li>
               <li>Transfer to the target computer (USB, email, etc).</li>
-              <li>
-                Open terminal/command prompt and run:<br>
+              <li>Open terminal/command prompt and run:<br>
                 <code>python crypto_desktop_scan.py</code>
               </li>
-              <li>
-                The scan report is saved as <b>crypto_forensics_report.txt</b>. Open it to review all traces and evidence.
-              </li>
+              <li>The scan report is saved as <b>crypto_forensics_report.txt</b>. Open it to review all traces and evidence.</li>
             </ol>
           </div>
           <div>
@@ -112,18 +124,14 @@
               <li>Enable <b>Developer Mode</b> & USB Debugging.</li>
               <li>Connect device to PC and use <b>adb</b>, or open Termux app.</li>
               <li>Copy or download the shell script above.</li>
-              <li>
-                In adb:<br>
+              <li>In adb:<br>
                 <code>adb push crypto_android_scan.sh /data/local/tmp/</code><br>
                 <code>adb shell sh /data/local/tmp/crypto_android_scan.sh &gt; /sdcard/crypto_android_report.txt</code>
               </li>
-              <li>
-                In Termux:<br>
+              <li>In Termux:<br>
                 <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
               </li>
-              <li>
-                Review <b>crypto_android_report.txt</b> for all detected traces.
-              </li>
+              <li>Review <b>crypto_android_report.txt</b> for all detected traces.</li>
             </ol>
           </div>
         </div>
