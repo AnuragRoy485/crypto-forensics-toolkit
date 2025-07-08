@@ -259,6 +259,7 @@ def scan_password_managers():
     return found
 
 def main():
+    global REPORT
     # REPORT is defined at module level; do NOT redeclare it here
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
