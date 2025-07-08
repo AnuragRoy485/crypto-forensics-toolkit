@@ -36,7 +36,7 @@ function setLoginFormHandlers() {
     e.preventDefault();
     const id = loginForm.querySelector('input[type="text"]').value.trim();
     const pass = loginForm.querySelector('input[type="password"]').value.trim();
-    if (id === 'admin' && pass === 'forensics@485') {
+    if (id === 'admin' && pass === 'forensics@321') {
       document.getElementById('login-section').style.display = 'none';
       document.getElementById('main-content').style.display = 'block';
       setAutoLogout();
