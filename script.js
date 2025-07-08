@@ -1,15 +1,15 @@
 // =============== Modal / Auth / AutoLogout ===============
-
 let sessionTimer = null;
 
-// Show the modal on load
 window.onload = function () {
   showLawEnfModal();
   setLoginFormHandlers();
-  setAutoLogout();
   setPythonDownload();
+  setTabHandlers();
+  setAutoLogout();
   setReportExport();
   logClientIP();
+  setLogoutHandler();
 };
 
 function showLawEnfModal() {
@@ -40,6 +40,7 @@ function setLoginFormHandlers() {
       document.getElementById('login-section').style.display = 'none';
       document.getElementById('main-content').style.display = 'block';
       setAutoLogout();
+      logClientIP();
     } else {
       alert('Invalid Login');
     }
@@ -50,27 +51,54 @@ function setAutoLogout() {
   clearTimeout(sessionTimer);
   sessionTimer = setTimeout(() => {
     document.getElementById('main-content').style.display = 'none';
-    document.getElementById('login-section').style.display = 'block';
+    document.getElementById('login-section').style.display = 'flex';
     alert('Session expired. Please login again.');
   }, 1000 * 60 * 15); // 15 minutes
 }
 
-// =============== Python Download Button ===============
-
-function setPythonDownload() {
-  const btn = document.getElementById('py-download');
+function setLogoutHandler() {
+  const btn = document.getElementById('logout-btn');
   if (btn) {
-    btn.onclick = () => {
-      window.open(
-        'https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe',
-        '_blank'
-      );
+    btn.onclick = function () {
+      document.getElementById('main-content').style.display = 'none';
+      document.getElementById('login-section').style.display = 'flex';
+      alert('You have been logged out.');
     };
   }
 }
 
-// =============== Report Export (to PDF) ===============
+// =============== Python Download Button ===============
+function setPythonDownload() {
+  const py1 = document.getElementById('py-download');
+  const py2 = document.getElementById('py-download-inline');
+  function downloadPy() {
+    window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
+  }
+  if (py1) py1.onclick = downloadPy;
+  if (py2) py2.onclick = downloadPy;
+}
 
+// =============== Navigation Tabs ===============
+function setTabHandlers() {
+  let tabLinks = [
+    { btn: 'tab-desktop', sec: 'section-desktop' },
+    { btn: 'tab-android', sec: 'section-android' },
+    { btn: 'tab-instructions', sec: 'section-instructions' }
+  ];
+  tabLinks.forEach((tab, idx) => {
+    document.getElementById(tab.btn).onclick = function (e) {
+      e.preventDefault();
+      tabLinks.forEach((tb) => {
+        document.getElementById(tb.btn).classList.remove('active');
+        document.getElementById(tb.sec).style.display = 'none';
+      });
+      this.classList.add('active');
+      document.getElementById(tab.sec).style.display = 'block';
+    };
+  });
+}
+
+// =============== Report Export (to PDF) ===============
 function setReportExport() {
   const btn = document.getElementById('export-pdf');
   if (!btn) return;
@@ -90,9 +118,7 @@ function setReportExport() {
 }
 
 // =============== Forensics Scripts ===============
-
 const desktopPythonScript = `import os, re, platform, hashlib
-
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
     "Exodus", "Blockchain.com", "Atomic Wallet", "Ledger Live"
@@ -103,7 +129,6 @@ KEYWORDS = [
     "0x", "bnb", "bc1", "ltc1", "trx", "doge", "exchange", "coinbase", "binance", "metamask", "phantom", "tronlink"
 ]
 BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wallet"]
-
 HOME = os.path.expanduser("~")
 REPORT = []
 
@@ -265,35 +290,27 @@ if __name__=="__main__":
 `;
 
 const androidScript = `echo "=== Android Crypto Forensics Scan ==="
-
 echo "[1] Installed Crypto Apps:"
 pm list packages | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
-
 echo "[2] APK remnants and wallet files:"
 find /data/app -type d 2>/dev/null | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|blockchain|coinbase"
 find /sdcard/ -type f -iregex ".*\\(wallet\\|crypto\\|metamask\\|trust\\|exodus\\|electrum\\|tron\\|phantom\\|keplr\\|atomic\\|coinomi\\|binance\\|blockchain\\|coinbase\\|seed\\|mnemonic\\|backup\\|keystore\\|phrase\\|key\\|address\\|0x\\|bnb\\|bc1\\|ltc1\\|trx\\).*" -exec shasum -a 256 {} \\;
-
 echo "[3] WhatsApp, Documents, Downloads, Screenshots:"
 find /sdcard/WhatsApp/Media/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
 find /sdcard/Download/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
 find /sdcard/Documents/ -type f 2>/dev/null | grep -Ei "wallet|crypto|seed|mnemonic|key|address"
 find /sdcard/Pictures/ -type f -iname "*screenshot*" -exec shasum -a 256 {} \\;
-
 echo "[4] SMS/WhatsApp databases for wallet/seed phrases (if accessible):"
 grep -Eri "wallet|seed|mnemonic|bitcoin|ethereum|metamask|address" /sdcard/WhatsApp/Databases/ 2>/dev/null
 grep -Eri "wallet|seed|mnemonic|bitcoin|ethereum|metamask|address" /sdcard/Documents/ 2>/dev/null
-
 echo "[5] Clipboard (if available):"
 if command -v termux-clipboard-get >/dev/null 2>&1; then
   termux-clipboard-get | grep -Ei "wallet|seed|mnemonic|bitcoin|ethereum|metamask|address"
 else
   echo "Clipboard access not available (install Termux:API)"
 fi
-
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
 `;
-
-// =============== Copy/Download Script Buttons ===============
 
 function copyScript(scriptType) {
   let code = scriptType === 'desktop' ? desktopPythonScript : androidScript;
@@ -318,14 +335,12 @@ function downloadScript(scriptType) {
 }
 
 // =============== Report Summary, Validation ===============
-
 function showReport() {
   let txt = document.getElementById('report-input').value.trim();
   if (!txt) {
     alert('Please paste a report.');
     return;
   }
-  // Validation for truncation, error or too small
   if (
     txt.length < 40 ||
     /traceback|error|no such file|failed/i.test(txt) ||
@@ -334,7 +349,6 @@ function showReport() {
     alert('This report appears incomplete or invalid. Please check and try again.');
     return;
   }
-  // ...continue with your summary logic (as in previous versions)...
   let lines = txt.split(/\r?\n/).filter((x) => x);
   let suspicious = lines.filter((l) =>
     l.match(
@@ -344,22 +358,21 @@ function showReport() {
   let summary = "<b>=== SCAN SUMMARY ===</b><br>";
   summary += suspicious.length
     ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
-      suspicious.slice(0, 12).map((l) => "<div>" + l + "</div>").join("")
-    : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
-  summary +=
-    "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
-    lines.slice(0, 200).join("<br>") +
-    (lines.length > 200 ? "<br>...(truncated)" : "") +
-    "</div>";
+      suspicious
+        .map((l) => l.replace(/(.{80})/g, '$1<br>'))
+        .join('<br>')
+    : "<span style='color:#ff6380;font-weight:bold'>No crypto traces detected.</span>";
+  summary += "<br><br><b>Full Report:</b><br><pre style='font-size:1em;max-height:180px;overflow:auto;background:#081019cc;padding:1em;border-radius:7px;'>" +
+    txt.replace(/</g, '&lt;') + "</pre>";
   document.getElementById('report-summary').innerHTML = summary;
 }
 
-// =============== IP Logging (client-side only) ===============
+// =============== IP Logging Feature ===============
 function logClientIP() {
   fetch('https://api.ipify.org?format=json')
-    .then((res) => res.json())
-    .then((d) => {
-      let ipbox = document.getElementById('ip-log');
-      if (ipbox) ipbox.textContent = "Session IP: " + d.ip;
+    .then((resp) => resp.json())
+    .then((data) => {
+      const ipEl = document.getElementById('ip-log');
+      if (ipEl) ipEl.textContent = "Your IP: " + data.ip;
     });
 }
