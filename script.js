@@ -1,77 +1,109 @@
-// ===== Security Modal Handling =====
+// =============== Modal / Auth / AutoLogout ===============
+
+let sessionTimer = null;
+
+// Show the modal on load
 window.onload = function () {
-  document.getElementById("security-modal").classList.add("show");
-  document.getElementById("login-modal").style.display = "none";
-  document.getElementById("dashboard").style.display = "none";
-  getUserIP();
-};
-document.getElementById("accept-btn").onclick = function () {
-  if (!document.getElementById("security-check").checked) {
-    alert("You must acknowledge the security notice!");
-    return;
-  }
-  document.getElementById("security-modal").style.display = "none";
-  document.getElementById("login-modal").style.display = "flex";
-  getUserIP();
+  showLawEnfModal();
+  setLoginFormHandlers();
+  setAutoLogout();
+  setPythonDownload();
+  setReportExport();
+  logClientIP();
 };
 
-// ===== Login Handling & Auto-Logout =====
-const VALID_USER = "admin", VALID_PASS = "forensics@485";
-let loginTimeout;
+function showLawEnfModal() {
+  const modal = document.getElementById('law-modal');
+  const contBtn = document.getElementById('law-continue');
+  const check = document.getElementById('law-check');
+  if (!modal) return;
+  modal.style.display = 'flex';
 
-function resetAutoLogout() {
-  clearTimeout(loginTimeout);
-  loginTimeout = setTimeout(() => {
-    logout();
-    alert("Logged out due to inactivity.");
-  }, 5 * 60 * 1000); // 5 minutes
+  contBtn.onclick = function () {
+    if (check.checked) {
+      modal.style.display = 'none';
+    } else {
+      check.focus();
+      alert('You must acknowledge before proceeding.');
+    }
+  };
 }
 
-document.getElementById("login-form").onsubmit = function(e){
-  e.preventDefault();
-  const u = document.getElementById("login-username").value.trim();
-  const p = document.getElementById("login-password").value;
-  if (u === VALID_USER && p === VALID_PASS) {
-    document.getElementById("login-modal").style.display = "none";
-    document.getElementById("dashboard").style.display = "block";
-    resetAutoLogout();
-    ["mousemove","keydown","click"].forEach(ev =>
-      window.addEventListener(ev, resetAutoLogout)
+function setLoginFormHandlers() {
+  const loginForm = document.getElementById('login-form');
+  if (!loginForm) return;
+  loginForm.onsubmit = function (e) {
+    e.preventDefault();
+    const id = loginForm.querySelector('input[type="text"]').value.trim();
+    const pass = loginForm.querySelector('input[type="password"]').value.trim();
+    if (id === 'admin' && pass === 'admin@123') {
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+      setAutoLogout();
+    } else {
+      alert('Invalid Login');
+    }
+  };
+}
+
+function setAutoLogout() {
+  clearTimeout(sessionTimer);
+  sessionTimer = setTimeout(() => {
+    document.getElementById('main-content').style.display = 'none';
+    document.getElementById('login-section').style.display = 'block';
+    alert('Session expired. Please login again.');
+  }, 1000 * 60 * 15); // 15 minutes
+}
+
+// =============== Python Download Button ===============
+
+function setPythonDownload() {
+  const btn = document.getElementById('py-download');
+  if (btn) {
+    btn.onclick = () => {
+      window.open(
+        'https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe',
+        '_blank'
+      );
+    };
+  }
+}
+
+// =============== Report Export (to PDF) ===============
+
+function setReportExport() {
+  const btn = document.getElementById('export-pdf');
+  if (!btn) return;
+  btn.onclick = function () {
+    const content = document.getElementById('report-summary').innerText;
+    if (!content.trim()) return alert('No report to export.');
+    const win = window.open('', '_blank');
+    win.document.write(
+      `<pre style="font-size:15px;font-family:monospace;padding:2em;background:#111b29;color:#00ffe1;">
+      <b>Crypto Traces Forensics Toolkit<br>Forensic Report Summary</b><br><br>${content.replace(
+        /</g,
+        '&lt;'
+      )}</pre>`
     );
-  } else {
-    document.getElementById("login-error").textContent = "Invalid Login ID or Password";
-  }
-  return false;
-};
-function logout() {
-  document.getElementById("dashboard").style.display = "none";
-  document.getElementById("login-modal").style.display = "flex";
-  document.getElementById("login-error").textContent = "";
-}
-document.getElementById("logout-btn").onclick = logout;
-
-// ===== IP Logger (Frontend Demo) =====
-function getUserIP(){
-  fetch('https://api.ipify.org?format=json')
-    .then(res=>res.json())
-    .then(data=>{
-      const ipDiv = document.getElementById("user-ip");
-      if(ipDiv) ipDiv.innerHTML = "Your IP: <b>" + data.ip + "</b>";
-    });
+    win.print();
+  };
 }
 
-// ===== Python (Desktop) Script =====
-const pythonScript = `import os, re, platform, hashlib
+// =============== Forensics Scripts ===============
+
+const desktopPythonScript = `import os, re, platform, hashlib
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
     "Exodus", "Blockchain.com", "Atomic Wallet", "Ledger Live"
 ]
-EXTENSIONS = [".dat", ".key", ".wallet", ".ldb", ".json", ".sqlite"]
+EXTENSIONS = [".dat", ".key", ".bin", ".wallet", ".ldb", ".log", ".json", ".sqlite", ".txt", ".pdf", ".docx"]
 KEYWORDS = [
-    "wallet", "crypto", "seed", "mnemonic", "key", "keystore", "phrase", "ledger", "address",
-    "0x", "bnb", "bc1", "ltc1", "trx", "exchange", "coinbase", "binance", "metamask", "phantom", "tronlink"
+    "wallet", "crypto", "seed", "mnemonic", "key", "backup", "keystore", "phrase", "ledger", "address",
+    "0x", "bnb", "bc1", "ltc1", "trx", "doge", "exchange", "coinbase", "binance", "metamask", "phantom", "tronlink"
 ]
+BROWSER_WALLETS = ["metamask", "phantom", "tronlink", "keplr", "coinbase", "wallet"]
+
 HOME = os.path.expanduser("~")
 REPORT = []
 
@@ -82,15 +114,16 @@ def sha256_file(path):
             for chunk in iter(lambda: f.read(65536), b""):
                 h.update(chunk)
         return h.hexdigest()
-    except Exception:
-        return None
+    except Exception as e:
+        return f"ERR:{e}"
 
 def find_files(root, exts, keywords):
     found = []
     for r, d, f in os.walk(root):
         for file in f:
             l = file.lower()
-            if any(l.endswith(e) for e in exts) or any(k in l for k in keywords):
+            # Only hash files if they have relevant keywords or extensions
+            if any(l.endswith(e) for e in exts) and any(k in l for k in keywords):
                 p = os.path.join(r, file)
                 found.append((p, sha256_file(p)))
     return found
@@ -122,16 +155,105 @@ def check_apps():
                         found.append(f)
     return found
 
+def check_browser_wallet_extensions():
+    found = []
+    chromepaths = [
+        os.path.join(HOME, ".config/google-chrome/Default/Extensions"),
+        os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/Extensions"),
+        os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/Extensions"),
+        os.path.join(HOME, ".mozilla/firefox")
+    ]
+    for p in chromepaths:
+        if os.path.exists(p):
+            for r, dirs, f in os.walk(p):
+                for d in dirs:
+                    if any(b in d.lower() for b in BROWSER_WALLETS):
+                        found.append(os.path.join(r, d))
+    return found
+
+def check_clipboard():
+    try:
+        import pyperclip
+        cb = pyperclip.paste()
+        if any(k in cb.lower() for k in KEYWORDS):
+            return cb
+    except: pass
+    return None
+
+def scan_notes_and_docs():
+    files = []
+    for base in ["Documents", "Downloads", "Desktop", "Notes", "OneDrive"]:
+        path = os.path.join(HOME, base)
+        if os.path.exists(path):
+            files += find_files(path, EXTENSIONS, KEYWORDS)
+    return files
+
+def scan_screenshots():
+    found = []
+    pictures = os.path.join(HOME, "Pictures")
+    if os.path.exists(pictures):
+        for r, d, f in os.walk(pictures):
+            for file in f:
+                if "screenshot" in file.lower() or any(k in file.lower() for k in KEYWORDS):
+                    p = os.path.join(r, file)
+                    found.append((p, sha256_file(p)))
+    return found
+
+def scan_browser_history():
+    try:
+        from shutil import copy2
+        import sqlite3
+        plat = platform.system()
+        if plat == "Windows":
+            hp = os.path.join(HOME, "AppData/Local/Google/Chrome/User Data/Default/History")
+        elif plat == "Darwin":
+            hp = os.path.join(HOME, "Library/Application Support/Google/Chrome/Default/History")
+        else:
+            hp = os.path.join(HOME, ".config/google-chrome/Default/History")
+        if os.path.exists(hp):
+            tmp = "temp_history"
+            copy2(hp, tmp)
+            con = sqlite3.connect(tmp)
+            c = con.cursor()
+            matches = []
+            for row in c.execute("SELECT url FROM urls"):
+                url = row[0].lower()
+                if any(kw in url for kw in KEYWORDS):
+                    matches.append(url)
+            con.close()
+            os.remove(tmp)
+            return matches
+    except: pass
+    return []
+
+def scan_password_managers():
+    found = []
+    for name in ["LastPass", "Bitwarden", "Dashlane", "KeePass", "Chrome", "Edge"]:
+        if name.lower() in os.listdir(HOME):
+            found.append(name)
+    return found
+
 def main():
     global REPORT
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
     REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
+    REPORT.append("\\n--- Browser Wallet Extensions ---")
+    REPORT += check_browser_wallet_extensions()
+    REPORT.append("\\n--- Password Managers Detected ---")
+    REPORT += scan_password_managers()
     REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
-    for p, h in find_files(HOME, EXTENSIONS, KEYWORDS):
-        if h:
-            REPORT.append(f"{p} [SHA256: {h}]")
+    for p, h in scan_notes_and_docs():
+        REPORT.append(f"{p} [SHA256: {h}]")
+    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    for p, h in scan_screenshots():
+        REPORT.append(f"{p} [SHA256: {h}]")
+    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT += scan_browser_history()
+    REPORT.append("\\n--- Clipboard (if suspicious) ---")
+    cb = check_clipboard()
+    if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
             f.write(str(line)+"\\n")
@@ -142,7 +264,6 @@ if __name__=="__main__":
     main()
 `;
 
-// ===== Android Forensics Script =====
 const androidScript = `echo "=== Android Crypto Forensics Scan ==="
 
 echo "[1] Installed Crypto Apps:"
@@ -172,68 +293,73 @@ fi
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
 `;
 
-// Set scripts on page load
-document.getElementById('py-script').textContent = pythonScript;
-document.getElementById('android-script').textContent = androidScript;
+// =============== Copy/Download Script Buttons ===============
 
-// ===== Copy/Download Script Functions (Desktop/Android) =====
-function copyScript(id) {
-  let el = document.getElementById(id);
-  let text = el.textContent || el.innerText;
-  navigator.clipboard.writeText(text).then(() => {
-    alert('Script copied to clipboard!');
-  });
+function copyScript(scriptType) {
+  let code = scriptType === 'desktop' ? desktopPythonScript : androidScript;
+  navigator.clipboard.writeText(code).then(() =>
+    alert('Script copied to clipboard!')
+  );
 }
-function downloadScript(id, filename) {
-  let el = document.getElementById(id);
-  let text = el.textContent || el.innerText;
-  let blob = new Blob([text], {type:'text/plain'});
+
+function downloadScript(scriptType) {
+  let filename =
+    scriptType === 'desktop'
+      ? 'crypto_desktop_scan.py'
+      : 'crypto_android_scan.sh';
+  let code = scriptType === 'desktop' ? desktopPythonScript : androidScript;
+  let blob = new Blob([code], { type: 'text/plain' });
   let url = URL.createObjectURL(blob);
   let a = document.createElement('a');
-  a.href = url; a.download = filename;
+  a.href = url;
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
 }
-function downloadPython() {
-  window.open('https://www.python.org/ftp/python/3.13.5/python-3.13.5-amd64.exe', '_blank');
-}
 
-// ======= Report Validation, Summary, and PDF =======
+// =============== Report Summary, Validation ===============
+
 function showReport() {
   let txt = document.getElementById('report-input').value.trim();
-  if (!txt || txt.length < 50) {
-    alert('Please paste a valid report!');
+  if (!txt) {
+    alert('Please paste a report.');
     return;
   }
-  // Validation for truncation/error
-  if (/truncated|error|failed/i.test(txt) || txt.split('\n').length < 8) {
-    alert('Report appears incomplete or may have errors!');
+  // Validation for truncation, error or too small
+  if (
+    txt.length < 40 ||
+    /traceback|error|no such file|failed/i.test(txt) ||
+    (txt.match(/\n/g) || []).length < 3
+  ) {
+    alert('This report appears incomplete or invalid. Please check and try again.');
+    return;
   }
-  let lines = txt.split(/\r?\n/).filter(x=>x);
-  let suspicious = lines.filter(l=>l.match(/sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i));
+  // ...continue with your summary logic (as in previous versions)...
+  let lines = txt.split(/\r?\n/).filter((x) => x);
+  let suspicious = lines.filter((l) =>
+    l.match(
+      /sha256|wallet|metamask|mnemonic|bitcoin|ethereum|exodus|trust|phantom|seed|key|address|coinbase|binance/i
+    )
+  );
   let summary = "<b>=== SCAN SUMMARY ===</b><br>";
   summary += suspicious.length
     ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
-      suspicious.slice(0,10).map(l=>"<div style='margin-bottom:2px'>" + l + "</div>").join("")
+      suspicious.slice(0, 12).map((l) => "<div>" + l + "</div>").join("")
     : "<span style='color:#aaf'>No major crypto traces found in this report.</span>";
-  summary += "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
-    lines.slice(0, 200).join("<br>") + (lines.length > 200 ? "<br>...(truncated)" : "") +
+  summary +=
+    "<br><br><b>Full Report:</b><br><div style='font-size:0.98em;background:#181d2a;padding:1em 0.5em;border-radius:9px;margin:1em 0;max-height:300px;overflow-y:auto'>" +
+    lines.slice(0, 200).join("<br>") +
+    (lines.length > 200 ? "<br>...(truncated)" : "") +
     "</div>";
   document.getElementById('report-summary').innerHTML = summary;
 }
 
-// ======= PDF Export =======
-function exportPDF() {
-  let summary = document.getElementById("report-summary");
-  if (!summary || !summary.innerText.trim()) {
-    alert("Please generate a summary before exporting.");
-    return;
-  }
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFontSize(17);
-  doc.text("Crypto Traces Forensics Toolkit", 14, 18);
-  doc.setFontSize(12);
-  doc.text(summary.innerText, 14, 28, {maxWidth: 180});
-  doc.save("Forensics_Report_Summary.pdf");
+// =============== IP Logging (client-side only) ===============
+function logClientIP() {
+  fetch('https://api.ipify.org?format=json')
+    .then((res) => res.json())
+    .then((d) => {
+      let ipbox = document.getElementById('ip-log');
+      if (ipbox) ipbox.textContent = "Session IP: " + d.ip;
+    });
 }
