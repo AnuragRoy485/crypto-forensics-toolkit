@@ -1,24 +1,17 @@
-// -------- Security Modal ----------
+// --------- Security Modal ----------
 document.addEventListener("DOMContentLoaded", function () {
-  // Security Modal Acknowledge
   const modal = document.getElementById("security-modal");
   const check = document.getElementById("acknowledge-checkbox");
   const btn = document.getElementById("accept-modal");
-  check.addEventListener("change", function() {
-    btn.disabled = !check.checked;
-  });
-  btn.addEventListener("click", function() {
-    modal.style.display = "none";
-  });
-  // Auto IP Log and Display
+  check.addEventListener("change", () => { btn.disabled = !check.checked; });
+  btn.addEventListener("click", () => { modal.style.display = "none"; });
   logIP();
   displayLastIP();
-  // Set scripts in code-blocks (hidden by default)
   document.getElementById('py-script').textContent = pythonScript;
   document.getElementById('android-script').textContent = androidScript;
 });
 
-// -------- IP Logging Feature -----------
+// --------- IP Logging -----------
 function logIP() {
   fetch('https://api.ipify.org/?format=json')
     .then(resp => resp.json())
@@ -38,12 +31,12 @@ function displayLastIP() {
   }
 }
 
-// --------- Login Logic -----------
+// --------- Login Logic ----------
 let loginTimeout = null;
 function login() {
   const uid = document.getElementById('login-id').value;
   const pwd = document.getElementById('login-pass').value;
-  if (uid === 'admin' && pwd === 'password123') {
+  if (uid === 'admin' && pwd === 'forensics@485') {
     document.getElementById('login-section').style.display = "none";
     document.getElementById('main-content').style.display = "";
     startAutoLogout();
@@ -59,8 +52,6 @@ function logout() {
   document.getElementById('login-pass').value = "";
   stopAutoLogout();
 }
-
-// --------- Auto Logout after 10 min ---------
 function startAutoLogout() {
   stopAutoLogout();
   loginTimeout = setTimeout(() => {
@@ -79,7 +70,7 @@ function resetAutoLogout() {
   if (loginTimeout) startAutoLogout();
 }
 
-// --------- Script Data (Desktop & Android) -----------
+// --------- Script Data -----------
 const pythonScript = `import os, re, platform, hashlib
 
 APPS = [
@@ -338,23 +329,30 @@ function showReport() {
   document.getElementById('report-summary').innerHTML = summary;
 }
 
-// ------------- Export to PDF ----------------
+// ---------- Export PDF -----------
 function exportPDF() {
-  let content = document.getElementById('report-summary').innerText || '';
-  if (!content.trim()) { alert("Nothing to export!"); return; }
-  let { jsPDF } = window.jspdf;
-  let doc = new jsPDF({orientation:'portrait', unit:'mm', format:'a4'});
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(18);
-  doc.setTextColor(0,170,255);
-  doc.text('Crypto Traces Forensics Toolkit', 14, 18);
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(13);
-  doc.setTextColor(0,255,220);
-  doc.text('Forensic Report Summary:', 14, 28);
+  const { jsPDF } = window.jspdf;
+  let report = document.getElementById('report-input').value.trim();
+  let summary = document.getElementById('report-summary').innerText || "No summary available.";
+  if (!report) { alert("Paste a report first!"); return; }
+  let doc = new jsPDF();
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("Crypto Traces Forensics Toolkit - Report", 15, 18);
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text("Summary:", 15, 30);
   doc.setFontSize(10);
-  doc.setTextColor(44,222,255);
-  let lines = doc.splitTextToSize(content, 180);
-  doc.text(lines, 14, 38);
+  doc.text(summary, 15, 37, {maxWidth: 180});
+  doc.setFont("helvetica", "bold");
+  doc.text("Full Report:", 15, 53);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  let y = 59;
+  report.split(/\r?\n/).forEach(line => {
+    if (y > 280) { doc.addPage(); y = 18;}
+    doc.text(line, 12, y);
+    y += 4;
+  });
   doc.save('Crypto_Forensics_Report.pdf');
 }
