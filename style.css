@@ -23,6 +23,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  box-sizing: border-box;
 }
 
 main {
@@ -33,22 +34,30 @@ main {
   width: 100%;
 }
 
+/* Footer always at bottom, always visible */
 footer {
-  flex-shrink: 0;
-  width: 100%;
-  margin-top: 0;
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  z-index: 2000;
   text-align: center;
-  background: rgba(10,17,40,0.91);
+  background: rgba(10,17,40,0.96);
   border-radius: 18px 18px 0 0;
-  padding: 1.2em 0 1.1em 0;
+  padding: 1em 0 1em 0;
   color: #00ffe1;
   font-weight: 600;
-  font-size: 1.14em;
-  letter-spacing: 0.05em;
+  font-size: 1.10em;
+  letter-spacing: 0.04em;
   box-shadow: 0 0 24px #0099ff29;
-  position: relative;
-  bottom: 0;
-  left: 0;
+  backdrop-filter: blur(8px);
+  /* Remove margin-top so it never floats */
+  margin-top: 0;
+}
+
+body::after {
+  content: '';
+  display: block;
+  height: 64px; /* ~Footer height for spacing on scroll */
 }
 
 /* Modal */
@@ -91,6 +100,7 @@ footer {
   box-shadow: 0 0 16px #00ffe14f;
   cursor: pointer;
   margin-top: 0.4em;
+  transition: background 0.16s, color 0.14s;
 }
 .modal-btn:hover {
   background: #0b3c50;
@@ -150,6 +160,7 @@ footer {
   cursor: pointer;
   margin-top: 0.2em;
   box-shadow: 0 2px 16px #00ffe14c;
+  transition: background 0.18s, color 0.18s;
 }
 .login-btn:hover {
   background: #0c2a48;
@@ -270,12 +281,13 @@ h2 {
   font-size: 1em;
   cursor: pointer;
   box-shadow: 0 2px 12px #00ffe13b;
-  transition: background 0.14s, color 0.13s;
+  transition: background 0.14s, color 0.13s, transform 0.14s;
   outline: none;
 }
 .button-row button:hover, .btn-mini:hover {
   background: #021d32;
   color: #00ffe1;
+  transform: translateY(-2px) scale(1.04);
 }
 
 /* Textarea, Report summary, etc */
@@ -328,10 +340,21 @@ details summary {
   margin-bottom: 0.4em;
 }
 
-/* Responsive */
+/* Animation */
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(30px);}
+  to   { opacity: 1; transform: none;}
+}
+
+/* Responsive Tweaks */
 @media (max-width: 1050px) {
   main { padding: 0 1em; }
   .app-section { padding: 1.1em 1em; }
-  header { padding: 1em 0.7em; }
+  header { padding: 1em 0.7em; flex-direction: column; gap: 0.7em;}
   .login-card { padding: 2.1em 0.7em; }
+}
+@media (max-width: 600px) {
+  header, main { max-width: 99vw; }
+  .app-section { padding: 0.7em 0.3em; }
+  footer { font-size: 0.99em; padding: 0.7em 0 0.7em 0;}
 }
