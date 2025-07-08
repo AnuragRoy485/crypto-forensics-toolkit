@@ -341,10 +341,10 @@ function showReport() {
     alert('Please paste a report.');
     return;
   }
+  // Accept if it contains the correct header and at least one divider
   if (
-    txt.length < 40 ||
-    /traceback|error|no such file|failed/i.test(txt) ||
-    (txt.match(/\n/g) || []).length < 3
+    !/^=+\s*\[Crypto Forensics Report\]/im.test(txt) ||
+    !/---/m.test(txt)
   ) {
     alert('This report appears incomplete or invalid. Please check and try again.');
     return;
@@ -366,6 +366,7 @@ function showReport() {
     txt.replace(/</g, '&lt;') + "</pre>";
   document.getElementById('report-summary').innerHTML = summary;
 }
+
 
 // =============== IP Logging Feature ===============
 function logClientIP() {
