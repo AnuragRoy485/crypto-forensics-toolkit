@@ -1,80 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Crypto Traces Forensics Toolkit</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- MODAL FOR LE USE ONLY -->
-  <div id="law-modal" class="modal">
-    <div class="modal-content">
-      <h2><span class="lock-emoji">🔒</span> For Law Enforcement Use Only</h2>
-      <p>
+  <!-- For Law Enforcement Modal -->
+  <div id="law-modal" class="modal-bg">
+    <div class="modal-card">
+      <div class="modal-head"><span class="emoji">🔒</span> For Law Enforcement Use Only</div>
+      <div class="modal-body">
         This toolkit is strictly intended for authorized law enforcement personnel.<br>
         Misuse is prohibited. Please acknowledge before proceeding.
-      </p>
-      <label style="display:flex;align-items:center;gap:9px;font-size:1.2em;margin:1.1em 0;">
-        <input type="checkbox" id="law-check" style="width:22px;height:22px;" />
-        <span style="font-weight:bold;color:#13ffd1">I acknowledge and accept</span>
-      </label>
-      <button id="law-continue" class="main-btn">Continue</button>
+      </div>
+      <div class="modal-check">
+        <input type="checkbox" id="law-check">
+        <label for="law-check"><b>I acknowledge and accept</b></label>
+      </div>
+      <button id="law-continue" class="modal-btn">Continue</button>
     </div>
   </div>
-
-  <div id="login-section">
-    <h1>Crypto Traces Forensics Toolkit</h1>
-    <form id="login-form" class="login-form">
-      <input type="text" placeholder="Login ID" required autocomplete="off" />
-      <input type="password" placeholder="Password" required autocomplete="off" />
-      <button class="main-btn" type="submit">Login</button>
-    </form>
-    <div id="ip-log"></div>
-  </div>
-
-  <main id="main-content" style="display:none">
+  <!-- Login -->
+  <section id="login-section">
+    <div class="login-center">
+      <div class="login-card">
+        <h1><span class="emoji">🛡️</span> Crypto Traces Forensics Toolkit</h1>
+        <form id="login-form" autocomplete="off">
+          <input type="text" placeholder="Login ID" required>
+          <input type="password" placeholder="Password" required>
+          <button type="submit" class="login-btn">Login</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <!-- Main App -->
+  <div id="main-content" style="display:none;">
     <header>
-      <h1>Crypto Traces Forensics Toolkit</h1>
+      <div class="nav-title">Crypto Traces Forensics Toolkit</div>
+      <nav>
+        <a href="#" id="tab-desktop" class="nav-link active">Desktop</a>
+        <a href="#" id="tab-android" class="nav-link">Android</a>
+        <a href="#" id="tab-instructions" class="nav-link">Instructions</a>
+      </nav>
+      <div id="ip-log"></div>
+      <button id="logout-btn">Logout</button>
     </header>
-    <section class="card glass animate">
-      <h2>
-        Desktop Forensics Script
-        <span class="badge">Win/Linux/macOS</span>
-      </h2>
-      <p>
-        <b>Detects crypto wallets, config files, browser traces, and more.</b>
-      </p>
-      <div class="button-row">
-        <span class="tag">Requires Python 3.7+</span>
-        <button id="py-download" class="main-btn" type="button">Download Python</button>
-        <button class="main-btn" type="button" onclick="copyScript('desktop')">Copy Script</button>
-        <button class="main-btn" type="button" onclick="downloadScript('desktop')">Download Script</button>
-      </div>
-    </section>
-    <section class="card glass animate">
-      <h2>
-        Android Forensics Script
-        <span class="badge">ADB/Termux</span>
-      </h2>
-      <div class="button-row">
-        <button class="main-btn" type="button" onclick="copyScript('android')">Copy Script</button>
-        <button class="main-btn" type="button" onclick="downloadScript('android')">Download Script</button>
-      </div>
-    </section>
-    <section class="card glass animate">
-      <h2>Forensic Report Summary</h2>
-      <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
-      <div class="button-row">
-        <button class="main-btn" type="button" onclick="showReport()">View Summary</button>
-        <button id="export-pdf" class="main-btn" type="button">Export PDF</button>
-      </div>
-      <div id="report-summary" class="report-summary"></div>
-    </section>
-    <footer>
-      Developed By <b>Anurag Roy</b> | <span style="color:#00ffe1;">Strictly For Law Enforcement Agencies</span> | <span style="color:#00baff; font-weight:600;">Jai Hind </span>
-    </footer>
-  </main>
+    <main>
+      <!-- DESKTOP SECTION -->
+      <section id="section-desktop" class="app-section">
+        <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
+        <p>
+          <b>Detects crypto wallets, config files, browser traces, and more.</b>
+          <span class="tag">Requires Python 3.7+</span>
+          <button id="py-download" class="btn-mini">Download Python</button>
+        </p>
+        <div class="button-row">
+          <button onclick="copyScript('desktop')">Copy Script</button>
+          <button onclick="downloadScript('desktop')">Download Script</button>
+        </div>
+        <details>
+          <summary>How does this work?</summary>
+          <ul>
+            <li>Scans for installed wallet apps & extensions</li>
+            <li>Finds crypto config files, screenshots, history, and passwords</li>
+            <li>Reports only files matching crypto-related keywords</li>
+          </ul>
+        </details>
+        <hr>
+        <h3>Forensic Report Summary</h3>
+        <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
+        <div class="button-row">
+          <button onclick="showReport()">View Summary</button>
+          <button id="export-pdf">Export to PDF</button>
+        </div>
+        <div id="report-summary" class="report-summary"></div>
+      </section>
+      <!-- ANDROID SECTION -->
+      <section id="section-android" class="app-section" style="display:none;">
+        <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
+        <p>
+          <b>Detects wallet apps, wallet files, screenshots, WhatsApp, SMS traces, clipboard artifacts.</b>
+          <span class="tag">Works via ADB or Termux</span>
+        </p>
+        <div class="button-row">
+          <button onclick="copyScript('android')">Copy Script</button>
+          <button onclick="downloadScript('android')">Download Script</button>
+        </div>
+        <details>
+          <summary>How does this work?</summary>
+          <ul>
+            <li>Finds wallet apps, APK traces, and files with crypto keywords</li>
+            <li>Hashes detected files for integrity/evidence</li>
+            <li>Reports results to text output</li>
+          </ul>
+        </details>
+      </section>
+      <!-- INSTRUCTIONS SECTION -->
+      <section id="section-instructions" class="app-section" style="display:none;">
+        <h2>Step-by-Step Usage Guide</h2>
+        <ol>
+          <li><b>Desktop Scan:</b>
+            <ul>
+              <li>Download Python 3.7+ (<button class="btn-mini" id="py-download-inline">Download Python</button>) if not already installed.</li>
+              <li>Click "Download Script" under Desktop and save <b>crypto_desktop_scan.py</b>.</li>
+              <li>Open <b>PowerShell/Terminal</b>, go to Downloads folder, run:<br>
+                <code>python crypto_desktop_scan.py</code>
+              </li>
+              <li>Review <b>crypto_forensics_report.txt</b> for detected crypto evidence.</li>
+              <li>Paste contents of this report above to get a forensic summary.</li>
+            </ul>
+          </li>
+          <li><b>Android Scan:</b>
+            <ul>
+              <li>Enable Developer Mode & USB Debugging on the device.</li>
+              <li>Connect device to PC, use ADB or Termux app.</li>
+              <li>Download and push the shell script, run:<br>
+                <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
+              </li>
+              <li>Review <b>crypto_android_report.txt</b> for evidence.</li>
+            </ul>
+          </li>
+        </ol>
+        <div class="notice">For Law Enforcement Use Only. Misuse is prohibited.</div>
+      </section>
+    </main>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
