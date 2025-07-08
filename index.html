@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Crypto Traces Forensics Toolkit</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <!-- jsPDF for PDF export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-  <!-- Security Notice Modal -->
+  <!-- Security Modal -->
   <div id="security-modal" class="modal show">
     <div class="modal-content">
       <h2>For Law Enforcement Use Only</h2>
@@ -17,49 +17,67 @@
         This toolkit is strictly intended for authorized law enforcement personnel.<br>
         Misuse is prohibited. Please acknowledge before proceeding.
       </p>
-      <label>
-        <input type="checkbox" id="security-check" />
-        I acknowledge and accept
+      <label style="display:flex;align-items:center;justify-content:center;gap:0.7em;margin-top:1.6em;font-size:1.1em;">
+        <input type="checkbox" id="security-check" style="width:1.1em;height:1.1em;"> I acknowledge and accept
       </label>
-      <button id="accept-btn">Continue</button>
+      <button id="accept-btn" class="btn-accent" style="margin-top:2em;width:160px">Continue</button>
     </div>
   </div>
-
   <!-- Login Modal -->
   <div id="login-modal" class="modal">
-    <div class="modal-content">
-      <h2><span style="color:#21b7ff">Law Enforcement Login</span></h2>
-      <form id="login-form">
-        <input type="text" id="login-username" placeholder="Login ID" autocomplete="username" required>
-        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
-        <button type="submit" id="login-btn">Login</button>
+    <div class="modal-content login-content">
+      <h2><span style="font-size:1.5em">🔒</span> Law Enforcement Login</h2>
+      <form id="login-form" autocomplete="off">
+        <input type="text" id="login-username" placeholder="Login ID" autocomplete="off" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <div id="login-error"></div>
+        <button type="submit" class="btn-accent" style="margin-top:1.1em;width:120px">Login</button>
       </form>
-      <div id="login-error" class="error"></div>
-      <div id="user-ip" style="font-size:0.95em;color:#14ffe7;margin-top:1em"></div>
     </div>
   </div>
-
-  <!-- Dashboard/Main App -->
-  <div id="dashboard" style="display:none;">
+  <!-- Main Dashboard -->
+  <div id="dashboard" style="display:none">
     <header>
-      <span class="logo">Crypto Traces Forensics Toolkit</span>
-      <button id="logout-btn">Logout</button>
+      <div class="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/851/851570.png" width="40" alt="logo">
+        <span>Crypto Traces Forensics Toolkit</span>
+      </div>
+      <nav>
+        <span id="user-ip"></span>
+        <button id="logout-btn" class="btn-accent" style="margin-left:2.5em;">Logout</button>
+      </nav>
     </header>
     <main>
-      <section class="card">
+      <!-- Desktop Forensics Script -->
+      <section class="card glass animate">
         <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
         <p>
-          <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
-          <span class="tag">Requires Python 3.7+</span>
-          <button class="python-btn" onclick="downloadPython()">Download Python</button>
+          <b>Detects crypto wallets, config files, browser traces, and more.</b>
         </p>
+        <div class="button-row">
+          <span class="tag">Requires Python 3.7+</span>
+          <button onclick="downloadPython()">Download Python</button>
+        </div>
         <div class="button-row">
           <button onclick="copyScript('py-script')">Copy Script</button>
           <button onclick="downloadScript('py-script','crypto_desktop_scan.py')">Download Script</button>
         </div>
         <pre id="py-script" class="code-block"></pre>
       </section>
-      <section class="card">
+      <!-- Android Forensics Script -->
+      <section class="card glass animate">
+        <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
+        <p>
+          <b>Detects crypto wallet apps, APKs, wallet files, WhatsApp, SMS traces, and clipboard artifacts.</b>
+        </p>
+        <div class="button-row">
+          <button onclick="copyScript('android-script')">Copy Script</button>
+          <button onclick="downloadScript('android-script','crypto_android_scan.sh')">Download Script</button>
+        </div>
+        <pre id="android-script" class="code-block"></pre>
+      </section>
+      <!-- Forensic Report Summary -->
+      <section class="card glass animate">
         <h2>Forensic Report Summary</h2>
         <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
         <div class="button-row">
@@ -70,7 +88,11 @@
       </section>
     </main>
     <footer>
-      Developed by <b>Anurag Roy</b> | <span style="color:#00ffe1;">For Law Enforcement Use Only</span> | <span style="color:#00baff;font-weight:600;">Jai Hind</span>
+      <p>
+        Developed By <b>Anurag Roy</b> |
+        <span style="color:#00ffe1;">Strictly For Law Enforcement Agencies</span> |
+        <span style="color:#00baff; font-weight:600;">Jai Hind</span>
+      </p>
     </footer>
   </div>
   <script src="script.js"></script>
