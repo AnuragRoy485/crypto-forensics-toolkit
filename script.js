@@ -119,6 +119,7 @@ function setReportExport() {
 
 // =============== Forensics Scripts ===============
 const desktopPythonScript = `import os, re, platform, hashlib
+
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
     "Exodus", "Blockchain.com", "Atomic Wallet", "Ledger Live"
@@ -147,7 +148,6 @@ def find_files(root, exts, keywords):
     for r, d, f in os.walk(root):
         for file in f:
             l = file.lower()
-            # Only hash files if they have relevant keywords or extensions
             if any(l.endswith(e) for e in exts) and any(k in l for k in keywords):
                 p = os.path.join(r, file)
                 found.append((p, sha256_file(p)))
@@ -259,35 +259,34 @@ def scan_password_managers():
     return found
 
 def main():
-    global REPORT
-    # REPORT is defined at module level; do NOT redeclare it here
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
-    REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
+    REPORT.append("\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
-    REPORT.append("\\n--- Browser Wallet Extensions ---")
+    REPORT.append("\n--- Browser Wallet Extensions ---")
     REPORT += check_browser_wallet_extensions()
-    REPORT.append("\\n--- Password Managers Detected ---")
+    REPORT.append("\n--- Password Managers Detected ---")
     REPORT += scan_password_managers()
-    REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
+    REPORT.append("\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
     for p, h in scan_notes_and_docs():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    REPORT.append("\n--- Screenshots with Wallet or Seed (SHA256) ---")
     for p, h in scan_screenshots():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT.append("\n--- Browser History URLs (wallet/seed/crypto) ---")
     REPORT += scan_browser_history()
-    REPORT.append("\\n--- Clipboard (if suspicious) ---")
+    REPORT.append("\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
     if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
-            f.write(str(line)+"\\n")
-    print("\\n".join(REPORT))
-    print("\\nReport saved as crypto_forensics_report.txt")
+            f.write(str(line)+"\n")
+    print("\n".join(REPORT))
+    print("\nReport saved as crypto_forensics_report.txt")
 
 if __name__=="__main__":
     main()
+
 `;
 
 const androidScript = `echo "=== Android Crypto Forensics Scan ==="
