@@ -28,8 +28,8 @@
       <div class="login-card">
         <h1><span class="emoji">🛡️</span> Crypto Traces Forensics Toolkit</h1>
         <form id="login-form" autocomplete="off">
-          <input type="text" placeholder="Login ID" required>
-          <input type="password" placeholder="Password" required>
+          <input type="text" id="login-id" placeholder="Login ID" required>
+          <input type="password" id="login-pass" placeholder="Password" required>
           <button type="submit" class="login-btn">Login</button>
         </form>
       </div>
@@ -103,27 +103,48 @@
         <ol>
           <li><b>Desktop Scan:</b>
             <ul>
-              <li>Download Python 3.7+ (<button class="btn-mini" id="py-download-inline">Download Python</button>) if not already installed. ( Also ensure ADD TO PATH is enabled while installing ).</li>
-              <li>Click "Download Script" under Desktop and save <b>crypto_desktop_scan.py</b>.</li>
-              <li>Open <b>PowerShell/Terminal</b>, go to Downloads folder, run:<br>
+              <li>
+                Download Python 3.7+ 
+                <button class="btn-mini" id="py-download-inline">Download Python</button>
+                if not already installed. <br>
+                <span style="color:#6ff;">(Enable <b>ADD TO PATH</b> when installing!)</span>
+              </li>
+              <li>
+                Click <b>Download Script</b> under Desktop and save <b>crypto_desktop_scan.py</b>.
+              </li>
+              <li>
+                Open <b>PowerShell/Terminal</b>, navigate to Downloads, run:<br>
                 <code>python crypto_desktop_scan.py</code>
               </li>
-              <li>Review <b>crypto_forensics_report.txt</b> for detected crypto evidence.</li>
-              <li>Paste contents of this report above to get a forensic summary.</li>
+              <li>
+                Review <b>crypto_forensics_report.txt</b> for detected crypto evidence.
+              </li>
+              <li>
+                Paste report contents above to generate a forensic summary.
+              </li>
             </ul>
           </li>
-          <li><b>Android Scan:</b>
+          <li style="margin-top:1.2em;"><b>Android Scan:</b>
             <ul>
-              <li>Enable Developer Mode & USB Debugging on the device.</li>
-              <li>Connect device to PC, use ADB or Termux app.</li>
-              <li>Download and push the shell script, run:<br>
+              <li>
+                Enable Developer Mode & USB Debugging on your Android device.
+              </li>
+              <li>
+                Connect device to PC, use ADB or Termux app.
+              </li>
+              <li>
+                Download and push the shell script, then run:<br>
                 <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
               </li>
-              <li>Review <b>crypto_android_report.txt</b> for evidence.</li>
+              <li>
+                Review <b>crypto_android_report.txt</b> for crypto evidence.
+              </li>
             </ul>
           </li>
         </ol>
-        <div class="notice">For Law Enforcement Use Only. Misuse is prohibited.</div>
+        <div class="notice">
+          For Law Enforcement Use Only. Misuse is prohibited.
+        </div>
       </section>
     </main>
   </div>
