@@ -7,23 +7,32 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Security Modal -->
+  <!-- Modal: Law Enforcement Use Only -->
   <div id="security-modal" class="modal">
     <div class="modal-content">
-      <h2>Notice</h2>
-      <p>This toolkit is for <b>Law Enforcement Use Only</b>.<br>By continuing, you acknowledge your authorized use and responsibility.</p>
-      <label><input type="checkbox" id="acknowledge-checkbox"> I acknowledge and accept</label>
+      <h2>For Law Enforcement Use Only</h2>
+      <p>
+        This toolkit is strictly intended for authorized law enforcement personnel.<br>
+        Misuse is prohibited. Please acknowledge before proceeding.
+      </p>
+      <label class="modal-checkbox">
+        <input type="checkbox" id="acknowledge-checkbox">
+        <span>I acknowledge and accept</span>
+      </label>
       <button id="accept-modal" disabled>Continue</button>
     </div>
   </div>
 
   <!-- Login Section -->
   <div id="login-section">
-    <h1>Crypto Traces Forensics Toolkit</h1>
-    <div class="login-card">
-      <input type="text" id="login-id" placeholder="Login ID" autocomplete="username">
-      <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password">
-      <button onclick="login()">Login</button>
+    <div class="login-container">
+      <img src="https://cdn-icons-png.flaticon.com/512/851/851570.png" class="login-logo" alt="logo">
+      <div class="login-title">Crypto Traces Forensics Toolkit</div>
+      <form class="login-form" onsubmit="event.preventDefault();login();">
+        <input type="text" id="login-id" placeholder="Login ID" autocomplete="username" required>
+        <input type="password" id="login-pass" placeholder="Password" autocomplete="current-password" required>
+        <button type="submit">Login</button>
+      </form>
     </div>
   </div>
 
@@ -31,96 +40,100 @@
   <main id="main-content" style="display:none;">
     <header>
       <div class="logo">
-        <img src="https://cdn-icons-png.flaticon.com/512/851/851570.png" width="44" alt="logo">
+        <img src="https://cdn-icons-png.flaticon.com/512/851/851570.png" width="36" alt="logo">
         <span>Crypto Traces Forensics Toolkit</span>
       </div>
       <nav>
         <a href="#desktop">Desktop</a>
         <a href="#android">Android</a>
         <a href="#instructions">Instructions</a>
-        <a href="#" onclick="logout()" style="color:#ff4a63">Logout</a>
+        <a href="#" onclick="logout()" class="logout-link">Logout</a>
       </nav>
     </header>
-    <section id="desktop" class="card glass animate">
-      <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
-      <p>
-        <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
-        <span class="tag">Requires Python 3.7+</span>
-        <button class="py-btn" onclick="downloadPython()">Download Python</button>
-      </p>
-      <div class="button-row">
-        <button onclick="copyScript('py-script')">Copy Script</button>
-        <button onclick="downloadScript('py-script','crypto_desktop_scan.py')">Download Script</button>
-      </div>
-      <pre id="py-script" class="code-block" style="display:none;"></pre>
-    </section>
-    <section id="android" class="card glass animate">
-      <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
-      <p>
-        <b>Detects wallet apps, APKs, wallet files, screenshots, WhatsApp, SMS traces, and clipboard artifacts.</b>
-        <span class="tag">Requires <code>adb</code> or Termux</span>
-      </p>
-      <div class="button-row">
-        <button onclick="copyScript('android-script')">Copy Script</button>
-        <button onclick="downloadScript('android-script','crypto_android_scan.sh')">Download Script</button>
-      </div>
-      <pre id="android-script" class="code-block" style="display:none;"></pre>
-    </section>
-    <section id="results" class="card glass animate">
-      <h2>Forensic Report Summary</h2>
-      <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
-      <div class="button-row">
-        <button onclick="showReport()">View Summary</button>
-        <button onclick="exportPDF()">Export as PDF</button>
-      </div>
-      <div id="report-summary" class="report-summary"></div>
-    </section>
-    <section id="instructions" class="card glass animate">
-      <h2>Step-by-Step Usage</h2>
-      <div class="instructions-flex">
-        <div>
-          <h3>For Desktop</h3>
-          <ol>
-            <li>Copy or download the Python script above.</li>
-            <li>Transfer to the target computer (USB, email, etc).</li>
-            <li>
-              Open terminal/command prompt and run:<br>
-              <code>python crypto_desktop_scan.py</code>
-            </li>
-            <li>
-              During installation, select <b>Add Python to PATH</b>.
-            </li>
-            <li>
-              The scan report is saved as <b>crypto_forensics_report.txt</b>. Open it to review all traces and evidence.
-            </li>
-          </ol>
+    <div class="main-wrapper">
+      <section id="desktop" class="card animate">
+        <h2>Desktop Forensics Script <span class="badge">Win/Linux/macOS</span></h2>
+        <div class="card-desc">
+          <div>
+            <b>Detects crypto wallets, browser extensions, config files, screenshots, clipboard, notes, browser history, password managers, and more.</b>
+            <div class="requirement-row">
+              <span class="tag">Requires Python 3.7+</span>
+              <button class="btn btn-xs" onclick="downloadPython()">Download Python</button>
+            </div>
+          </div>
         </div>
-        <div>
-          <h3>For Android</h3>
-          <ol>
-            <li>Enable <b>Developer Mode</b> & USB Debugging.</li>
-            <li>Connect device to PC and use <b>adb</b>, or open Termux app.</li>
-            <li>Copy or download the shell script above.</li>
-            <li>
-              In adb:<br>
-              <code>adb push crypto_android_scan.sh /data/local/tmp/</code><br>
-              <code>adb shell sh /data/local/tmp/crypto_android_scan.sh &gt; /sdcard/crypto_android_report.txt</code>
-            </li>
-            <li>
-              In Termux:<br>
-              <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
-            </li>
-            <li>
-              Review <b>crypto_android_report.txt</b> for all detected traces.
-            </li>
-          </ol>
+        <div class="button-row">
+          <button onclick="copyScript('py-script')">Copy Script</button>
+          <button onclick="downloadScript('py-script','crypto_desktop_scan.py')">Download Script</button>
         </div>
-      </div>
-      <div class="notice">
-        <b>Legal:</b> Strictly For Law Enforcement Agencies.<br>
-        <span id="ip-log-info" style="font-size:0.98em;color:#09f"></span>
-      </div>
-    </section>
+        <pre id="py-script" class="code-block"></pre>
+      </section>
+      <section id="android" class="card animate">
+        <h2>Android Forensics Script <span class="badge">ADB/Termux</span></h2>
+        <div class="card-desc">
+          <b>Detects wallet apps, APKs, wallet files, screenshots, WhatsApp, SMS traces, and clipboard artifacts.</b>
+          <span class="tag">Requires <code>adb</code> or Termux</span>
+        </div>
+        <div class="button-row">
+          <button onclick="copyScript('android-script')">Copy Script</button>
+          <button onclick="downloadScript('android-script','crypto_android_scan.sh')">Download Script</button>
+        </div>
+        <pre id="android-script" class="code-block"></pre>
+      </section>
+      <section id="results" class="card animate">
+        <h2>Forensic Report Summary</h2>
+        <textarea id="report-input" placeholder="Paste your scan report here..."></textarea>
+        <div class="button-row">
+          <button onclick="showReport()">View Summary</button>
+          <button onclick="exportPDF()">Export as PDF</button>
+        </div>
+        <div id="report-summary" class="report-summary"></div>
+      </section>
+      <section id="instructions" class="card animate">
+        <h2>Step-by-Step Usage</h2>
+        <div class="instructions-flex">
+          <div>
+            <h3>For Desktop</h3>
+            <ol>
+              <li>Copy or download the Python script above.</li>
+              <li>Transfer to the target computer (USB, email, etc).</li>
+              <li>Install Python (select <b>Add Python to PATH</b> during installation).</li>
+              <li>
+                Open terminal/command prompt and run:<br>
+                <code>python crypto_desktop_scan.py</code>
+              </li>
+              <li>
+                The scan report is saved as <b>crypto_forensics_report.txt</b>. Open it to review all traces and evidence.
+              </li>
+            </ol>
+          </div>
+          <div>
+            <h3>For Android</h3>
+            <ol>
+              <li>Enable <b>Developer Mode</b> & USB Debugging.</li>
+              <li>Connect device to PC and use <b>adb</b>, or open Termux app.</li>
+              <li>Copy or download the shell script above.</li>
+              <li>
+                In adb:<br>
+                <code>adb push crypto_android_scan.sh /data/local/tmp/</code><br>
+                <code>adb shell sh /data/local/tmp/crypto_android_scan.sh &gt; /sdcard/crypto_android_report.txt</code>
+              </li>
+              <li>
+                In Termux:<br>
+                <code>sh crypto_android_scan.sh &gt; crypto_android_report.txt</code>
+              </li>
+              <li>
+                Review <b>crypto_android_report.txt</b> for all detected traces.
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="notice">
+          <b>Legal:</b> Strictly For Law Enforcement Agencies.<br>
+          <span id="ip-log-info"></span>
+        </div>
+      </section>
+    </div>
   </main>
   <footer>
     <p>
