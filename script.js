@@ -1,7 +1,5 @@
 // =============== Modal / Auth / AutoLogout ===============
 let sessionTimer = null;
-let isLoggedIn = false;
-const twofaSecretKey = "JBSWY3DPEHPK3PXP"; // Use a strong random base32 in real usage
 
 window.onload = function () {
   showLawEnfModal();
@@ -21,23 +19,20 @@ function show2FAModal() {
   const modal = document.getElementById('twofa-modal');
   modal.style.display = 'flex';
 
-  // Show QR code first time only
-  if (!window._twofa_qr_generated) {
-    const otpauth = otplib.authenticator.keyuri(
-      "admin",
-      "CryptoTracesToolkit",
-      twofaSecretKey
-    );
-    document.getElementById('2fa-instructions').innerHTML =
-      'Scan this QR code with <b>Google Authenticator</b> app.<br>Next, enter the 6-digit code below.';
-    QRCode.toCanvas(
-      document.getElementById('qrcode-2fa'),
-      otpauth,
-      { width: 210 },
-      function (error) { }
-    );
-    window._twofa_qr_generated = true;
-  }
+  // Always regenerate QR and instructions on every login
+  const otpauth = otplib.authenticator.keyuri(
+    "admin",
+    "CryptoTracesToolkit",
+    twofaSecretKey
+  );
+  document.getElementById('2fa-instructions').innerHTML =
+    'Scan this QR code with <b>Google Authenticator</b> app.<br>Then enter the 6-digit code below.';
+  QRCode.toCanvas(
+    document.getElementById('qrcode-2fa'),
+    otpauth,
+    { width: 210 },
+    function (error) { }
+  );
   document.getElementById('twofa-code').value = '';
   document.getElementById('twofa-error').textContent = '';
 }
@@ -52,7 +47,6 @@ function setTwoFAFormHandler() {
     if (valid) {
       document.getElementById('twofa-modal').style.display = 'none';
       document.getElementById('main-content').style.display = 'block';
-      isLoggedIn = true;
       setAutoLogout();
       logClientIP();
     } else {
@@ -60,6 +54,8 @@ function setTwoFAFormHandler() {
     }
   };
 }
+
+const twofaSecretKey = "JBSWY3DPEHPK3PXP"; // Demo secret, use a real random base32 in production
 
 function showLawEnfModal() {
   const modal = document.getElementById('law-modal');
@@ -86,7 +82,6 @@ function setLoginFormHandlers() {
     const id = loginForm.querySelector('input[type="text"]').value.trim();
     const pass = loginForm.querySelector('input[type="password"]').value.trim();
     if (id === 'admin' && pass === 'forensics@321') {
-      // Show 2FA Modal instead of main-content
       show2FAModal();
     } else {
       alert('Invalid Login');
@@ -100,7 +95,6 @@ function setAutoLogout() {
     document.getElementById('main-content').style.display = 'none';
     document.getElementById('login-section').style.display = 'flex';
     document.getElementById('twofa-modal').style.display = 'none';
-    isLoggedIn = false;
     alert('Session expired. Please login again.');
   }, 1000 * 60 * 15); // 15 minutes
 }
@@ -112,7 +106,6 @@ function setLogoutHandler() {
       document.getElementById('main-content').style.display = 'none';
       document.getElementById('login-section').style.display = 'flex';
       document.getElementById('twofa-modal').style.display = 'none';
-      isLoggedIn = false;
       alert('You have been logged out.');
     };
   }
@@ -312,28 +305,28 @@ def scan_password_managers():
 def main():
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
-    REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
+    REPORT.append("\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
-    REPORT.append("\\n--- Browser Wallet Extensions ---")
+    REPORT.append("\n--- Browser Wallet Extensions ---")
     REPORT += check_browser_wallet_extensions()
-    REPORT.append("\\n--- Password Managers Detected ---")
+    REPORT.append("\n--- Password Managers Detected ---")
     REPORT += scan_password_managers()
-    REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
+    REPORT.append("\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
     for p, h in scan_notes_and_docs():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    REPORT.append("\n--- Screenshots with Wallet or Seed (SHA256) ---")
     for p, h in scan_screenshots():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT.append("\n--- Browser History URLs (wallet/seed/crypto) ---")
     REPORT += scan_browser_history()
-    REPORT.append("\\n--- Clipboard (if suspicious) ---")
+    REPORT.append("\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
     if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
-            f.write(str(line)+"\\n")
-    print("\\n".join(REPORT))
-    print("\\nReport saved as crypto_forensics_report.txt")
+            f.write(str(line)+"\n")
+    print("\n".join(REPORT))
+    print("\nReport saved as crypto_forensics_report.txt")
 
 if __name__=="__main__":
     main()
@@ -425,3 +418,10 @@ function logClientIP() {
       if (ipEl) ipEl.textContent = "Your IP: " + data.ip;
     });
 }
+
+// ======= Minimal otplib + QRCode (use CDN in your HTML head) =======
+/*
+<script src="https://cdn.jsdelivr.net/npm/otplib@12.0.1/otplib-browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+*/
+// Both libraries are required for the above to work. Place them in your <head>.
