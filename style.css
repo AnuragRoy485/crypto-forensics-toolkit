@@ -37,6 +37,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
   background: linear-gradient(125deg, #10131a 60%, #16223a 100%);
+  box-sizing: border-box;
 }
 
 main {
@@ -45,9 +46,9 @@ main {
   margin: 2.4rem auto 0 auto;
   padding: 0 1.6em 2.5em 1.6em;
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* Footer */
 footer {
   position: fixed;
   left: 0; right: 0; bottom: 0;
@@ -70,7 +71,7 @@ body::after {
   height: 65px;
 }
 
-/* === Modal with Animation === */
+/* Modal */
 .modal-bg {
   position: fixed; z-index: 1100; inset: 0;
   background: rgba(15,18,24,0.97);
@@ -90,7 +91,9 @@ body::after {
   color: #f2f7fc;
   text-align: center;
   min-width: 320px;
-  max-width: 99vw;
+  max-width: 95vw;
+  width: 100%;
+  box-sizing: border-box;
   backdrop-filter: var(--panel-blur);
   animation: modal-in .55s cubic-bezier(.54,.22,.38,1.13);
 }
@@ -135,15 +138,20 @@ body::after {
   transform: scale(1.03);
 }
 
-/* === Login Section === */
+/* Login Section */
 #login-section {
   display: flex; align-items: center; justify-content: center;
   min-height: 100vh;
   animation: fadein .9s;
+  width: 100vw;
+  box-sizing: border-box;
+  padding: 0;
 }
 .login-center {
   display: flex; align-items: center; justify-content: center;
   width: 100vw; height: 100vh;
+  box-sizing: border-box;
+  padding: 0;
 }
 .login-card {
   background: var(--glass-dark);
@@ -151,8 +159,10 @@ body::after {
   border: 2.2px solid var(--border);
   box-shadow: var(--shadow-lg);
   padding: 2.4em 2em 2em 2em;
-  min-width: 345px;
-  max-width: 98vw;
+  min-width: 320px;
+  max-width: 95vw;
+  width: 100%;
+  box-sizing: border-box;
   backdrop-filter: var(--panel-blur);
   animation: card-bounce-in .9s cubic-bezier(.28,1.14,.33,1);
 }
@@ -183,6 +193,8 @@ body::after {
   outline: none;
   box-shadow: 0 2px 10px #09141e17;
   transition: border .13s, box-shadow .13s;
+  width: 100%;
+  box-sizing: border-box;
 }
 #login-form input:focus {
   border: 1.7px solid var(--accent2);
@@ -200,6 +212,7 @@ body::after {
   margin-top: 0.18em;
   box-shadow: 0 2px 18px #00ffe123;
   transition: background var(--transition), color .12s, box-shadow .13s;
+  width: 100%;
 }
 .login-btn:hover {
   background: #1c3265;
@@ -207,7 +220,7 @@ body::after {
   box-shadow: 0 8px 22px #00ffe126;
 }
 
-/* === Header/Nav === */
+/* Header/Nav */
 header {
   width: 100%;
   display: flex; align-items: center; justify-content: space-between;
@@ -219,19 +232,18 @@ header {
   position: relative;
   backdrop-filter: var(--panel-blur);
   animation: fadein .9s;
-}
-@keyframes fadein {
-  from { opacity: 0; transform: translateY(20px);}
-  to   { opacity: 1; transform: none;}
+  box-sizing: border-box;
 }
 .nav-title {
   font-size: 1.45em;
   font-weight: 900;
   color: var(--accent2);
   letter-spacing: 1.3px;
+  flex-shrink: 0;
 }
 nav {
   display: flex; gap: 1.2em;
+  flex-shrink: 1;
 }
 .nav-link {
   color: var(--accent);
@@ -268,7 +280,7 @@ nav {
   color: #fff;
 }
 
-/* === IP Log (Responsive, Glass) === */
+/* Responsive IP Log */
 #ip-log {
   font-size: 1em;
   color: #8ee6ef;
@@ -285,6 +297,7 @@ nav {
   border: 1.2px solid #263e5c;
   box-shadow: 0 1px 7px #171e2a24 inset;
   transition: all .19s cubic-bezier(.6,.09,.28,.99);
+  box-sizing: border-box;
 }
 
 @media (max-width: 900px) {
@@ -296,6 +309,16 @@ nav {
     display: block;
     text-align: left;
   }
+  header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7em;
+    padding: 1em 0.8em;
+  }
+  nav {
+    gap: 0.8em;
+    margin: 0.2em 0;
+  }
 }
 @media (max-width: 600px) {
   #ip-log {
@@ -306,9 +329,14 @@ nav {
     text-align: left;
     word-break: break-all;
   }
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.8em 0.13em;
+  }
 }
 
-/* === App Panels (with animation) === */
+/* App Panels */
 .app-section {
   margin-bottom: 2.6em;
   padding: 2em 1.5em;
@@ -319,6 +347,9 @@ nav {
   animation: fadein .95s;
   backdrop-filter: var(--panel-blur);
   transition: background .21s, box-shadow .21s;
+  max-width: 100vw;
+  width: 100%;
+  box-sizing: border-box;
 }
 h2 {
   color: var(--accent);
@@ -392,6 +423,7 @@ textarea#report-input {
   resize: vertical;
   font-family: var(--font-main);
   transition: background .14s, border .14s;
+  box-sizing: border-box;
 }
 
 .report-summary {
@@ -405,6 +437,7 @@ textarea#report-input {
   padding: 1em 1.1em;
   font-family: var(--font-main);
   animation: fadein .7s;
+  box-sizing: border-box;
 }
 
 .notice {
@@ -416,6 +449,7 @@ textarea#report-input {
   border-radius: 11px;
   font-size: 1.09em;
   box-shadow: 0 0 8px #f8717118 inset;
+  box-sizing: border-box;
 }
 
 hr {
@@ -430,15 +464,14 @@ details summary {
   margin-bottom: 0.44em;
 }
 
-/* === Responsive Tweaks === */
 @media (max-width: 1100px) {
   main { padding: 0 0.6em; }
   .app-section { padding: 1.15em 0.5em; }
-  header { padding: 1em 0.6em; flex-direction: column; gap: 0.7em;}
+  header { padding: 1em 0.8em; flex-direction: column; gap: 0.7em;}
   .login-card { padding: 2.0em 0.7em; }
 }
 @media (max-width: 600px) {
-  header, main { max-width: 99vw; }
+  header, main { max-width: 100vw; }
   .app-section { padding: 0.7em 0.11em; }
   footer { font-size: 0.99em; padding: 0.7em 0 0.7em 0;}
   .modal-card { padding: 1.1em 0.3em 1.06em 0.3em;}
