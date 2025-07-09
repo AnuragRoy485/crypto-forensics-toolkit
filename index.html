@@ -5,9 +5,6 @@
   <title>Crypto Traces Forensics Toolkit</title>
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
-  <!-- 2FA dependencies -->
-  <script src="https://cdn.jsdelivr.net/npm/otplib@12.0.1/otplib-browser.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </head>
 <body>
   <!-- For Law Enforcement Modal -->
@@ -25,7 +22,6 @@
       <button id="law-continue" class="modal-btn">Continue</button>
     </div>
   </div>
-
   <!-- Login -->
   <section id="login-section">
     <div class="login-center">
@@ -39,24 +35,6 @@
       </div>
     </div>
   </section>
-
-  <!-- 2FA Modal -->
-  <div id="twofa-modal" class="modal-bg" style="display:none;">
-    <div class="modal-card" style="min-width:330px">
-      <div class="modal-head">🔑 2-Factor Authentication Required</div>
-      <div class="modal-body">
-        <div id="2fa-instructions" style="margin-bottom:1em;text-align:center"></div>
-        <canvas id="qrcode-2fa" style="margin:auto;display:block;"></canvas>
-        <form id="twofa-form" autocomplete="off" style="margin-top:1.2em;">
-          <input id="twofa-code" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" placeholder="Enter 6-digit code" required style="padding:0.7em 1em;font-size:1.12em;border-radius:10px;border:1.4px solid #0099ff88;outline:none;margin-bottom:0.6em;width:80%">
-          <br>
-          <button class="modal-btn" type="submit">Verify</button>
-        </form>
-        <div id="twofa-error" style="color:#ff4a63;font-weight:600;margin-top:0.8em;"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Main App -->
   <div id="main-content" style="display:none;">
     <header>
@@ -173,3 +151,6 @@
   <footer>
     Developed by Anurag Roy | <span style="color:#00ffe1;">Jai Hind</span>
   </footer>
+  <script src="script.js"></script>
+</body>
+</html>
