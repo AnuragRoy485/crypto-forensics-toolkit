@@ -24,6 +24,8 @@ function showLawEnfModal() {
       modal.style.display = 'none';
     } else {
       check.focus();
+      modal.classList.add('modal-shake');
+      setTimeout(() => modal.classList.remove('modal-shake'), 350);
       alert('You must acknowledge before proceeding.');
     }
   };
@@ -107,18 +109,18 @@ function setReportExport() {
     if (!content.trim()) return alert('No report to export.');
     const win = window.open('', '_blank');
     win.document.write(
-      <pre style="font-size:15px;font-family:monospace;padding:2em;background:#111b29;color:#00ffe1;">
+      `<pre style="font-size:15px;font-family:monospace;padding:2em;background:#111b29;color:#00ffe1;">
       <b>Crypto Traces Forensics Toolkit<br>Forensic Report Summary</b><br><br>${content.replace(
         /</g,
         '&lt;'
-      )}</pre>
+      )}</pre>`
     );
     win.print();
   };
 }
 
 // =============== Forensics Scripts ===============
-const desktopPythonScript = import os, re, platform, hashlib
+const desktopPythonScript = `import os, re, platform, hashlib
 
 APPS = [
     "Trust", "MetaMask", "Coinbase", "Binance", "Phantom", "TokenPocket", "TronLink",
@@ -161,7 +163,7 @@ def check_apps():
             import winreg
             for hive in [winreg.HKEY_LOCAL_MACHINE, winreg.HKEY_CURRENT_USER]:
                 try:
-                    key = winreg.OpenKey(hive, r"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall")
+                    key = winreg.OpenKey(hive, r"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Uninstall")
                     for i in range(0, winreg.QueryInfoKey(key)[0]):
                         skey = winreg.EnumKey(key, i)
                         try:
@@ -261,35 +263,34 @@ def scan_password_managers():
 def main():
     REPORT.append("=== [Crypto Forensics Report] ===")
     REPORT.append(f"[System]: {platform.system()} - {platform.node()}")
-    REPORT.append("\n--- Installed Crypto Wallet Apps ---")
+    REPORT.append("\\n--- Installed Crypto Wallet Apps ---")
     REPORT += check_apps()
-    REPORT.append("\n--- Browser Wallet Extensions ---")
+    REPORT.append("\\n--- Browser Wallet Extensions ---")
     REPORT += check_browser_wallet_extensions()
-    REPORT.append("\n--- Password Managers Detected ---")
+    REPORT.append("\\n--- Password Managers Detected ---")
     REPORT += scan_password_managers()
-    REPORT.append("\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
+    REPORT.append("\\n--- Notes/Docs/Downloads/Seed files (SHA256) ---")
     for p, h in scan_notes_and_docs():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\n--- Screenshots with Wallet or Seed (SHA256) ---")
+    REPORT.append("\\n--- Screenshots with Wallet or Seed (SHA256) ---")
     for p, h in scan_screenshots():
         REPORT.append(f"{p} [SHA256: {h}]")
-    REPORT.append("\n--- Browser History URLs (wallet/seed/crypto) ---")
+    REPORT.append("\\n--- Browser History URLs (wallet/seed/crypto) ---")
     REPORT += scan_browser_history()
-    REPORT.append("\n--- Clipboard (if suspicious) ---")
+    REPORT.append("\\n--- Clipboard (if suspicious) ---")
     cb = check_clipboard()
     if cb: REPORT.append(cb)
     with open("crypto_forensics_report.txt", "w", encoding="utf8") as f:
         for line in REPORT:
-            f.write(str(line)+"\n")
-    print("\n".join(REPORT))
-    print("\nReport saved as crypto_forensics_report.txt")
+            f.write(str(line)+"\\n")
+    print("\\n".join(REPORT))
+    print("\\nReport saved as crypto_forensics_report.txt")
 
 if __name__=="__main__":
     main()
+`;
 
-;
-
-const androidScript = echo "=== Android Crypto Forensics Scan ==="
+const androidScript = `echo "=== Android Crypto Forensics Scan ==="
 echo "[1] Installed Crypto Apps:"
 pm list packages | grep -Ei "wallet|crypto|metamask|trust|exodus|electrum|tron|phantom|keplr|atomic|coinomi|binance|monero|zcash|litecoin|bnb|blockchain|coinbase"
 echo "[2] APK remnants and wallet files:"
@@ -310,7 +311,7 @@ else
   echo "Clipboard access not available (install Termux:API)"
 fi
 echo "=== Scan Complete. Review above for evidence (SHA256 hashes for files). ==="
-;
+`;
 
 function copyScript(scriptType) {
   let code = scriptType === 'desktop' ? desktopPythonScript : androidScript;
@@ -357,7 +358,7 @@ function showReport() {
   );
   let summary = "<b>=== SCAN SUMMARY ===</b><br>";
   summary += suspicious.length
-    ? <span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br> +
+    ? `<span style='color:#00ffd0;font-weight:bold'>Suspicious traces found:</span><br>` +
       suspicious
         .map((l) => l.replace(/(.{80})/g, '$1<br>'))
         .join('<br>')
@@ -366,7 +367,6 @@ function showReport() {
     txt.replace(/</g, '&lt;') + "</pre>";
   document.getElementById('report-summary').innerHTML = summary;
 }
-
 
 // =============== IP Logging Feature ===============
 function logClientIP() {
